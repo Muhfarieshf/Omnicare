@@ -1,4 +1,62 @@
-# CakePHP Application Skeleton
+# OmniCare – Hospital Appointment Booking System
+
+OmniCare is a hospital appointment booking system built with CakePHP 5.x. It provides a modern, corporate, and responsive web interface for managing hospital appointments, patients, doctors, and departments.
+
+## Key Features
+
+-   **User Roles:** Admin, Doctor, Patient (with access control and restrictions)
+-   **Authentication & Authorization:** Secure login, registration, and role-based access
+-   **Appointment Management:** Book, view, edit, and cancel appointments
+-   **Dashboards:** Custom dashboards for Admins, Doctors, and Patients
+-   **Patient & Doctor Management:** CRUD operations for patients and doctors
+-   **Department Management:** Organize doctors by departments
+-   **Reports:** (Future release) Generate and print appointment and patient reports (feature not yet available)
+-   **Flash Messaging:** User feedback for actions (success, error, etc.)
+-   **Responsive UI:** Bootstrap-based, clean, and professional design
+
+## Architecture
+
+-   **Backend:** CakePHP 5.x MVC framework (PHP 8+)
+-   **Frontend:** Bootstrap 5, FontAwesome, custom CSS
+-   **Database:** MySQL (see `hospital_appointment_system.sql` for schema)
+-   **Testing:** PHPUnit, CakePHP test suite
+
+## Setup & Installation
+
+1. Clone the repository and install dependencies:
+    ```bash
+    composer install
+    ```
+2. Configure your database in `config/app_local.php`.
+3. Import the schema from `hospital_appointment_system.sql`.
+4. Start the server:
+    ```bash
+    bin/cake server -p 8765
+    ```
+5. Visit [http://localhost:8765](http://localhost:8765) in your browser.
+
+## Usage
+
+-   **Login/Register:** Patients can register; Admins/Doctors are created by admin.
+-   **Book Appointments:** Patients can book with available doctors.
+-   **Manage Data:** Admins manage users, doctors, departments, and appointments.
+-   **Dashboards:** Each role sees relevant stats and quick actions.
+-   **Reports:** Admins and doctors can generate printable reports.
+
+## Access & Restrictions
+
+-   **Patients:** Can only view and manage their own data/appointments.
+-   **Doctors:** Can only view their own schedule and patients.
+-   **Admins:** Full access to all features and data.
+
+## Dependencies
+
+-   CakePHP 5.x
+-   Bootstrap 5
+-   FontAwesome
+-   MySQL
+
+---
 
 ![Build Status](https://github.com/cakephp/app/actions/workflows/ci.yml/badge.svg?branch=5.x)
 [![Total Downloads](https://img.shields.io/packagist/dt/cakephp/app.svg?style=flat-square)](https://packagist.org/packages/cakephp/app)
