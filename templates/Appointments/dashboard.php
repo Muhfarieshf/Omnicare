@@ -1,9 +1,12 @@
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Dashboard</h1>
-</div>
+<div class="container-fluid d-flex justify-content-center" style="max-width:1680px;">
+    <div class="row w-100 justify-content-left">
+        <div class="col-md-10">
+            <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2 mb-0 text-left">Dashboard</h1>
+            </div>
 
 <!-- Statistics Cards -->
-<div class="row mb-4">
+<div class="row mb-3">
     <div class="col-md-3">
         <div class="card text-white bg-primary">
             <div class="card-body">

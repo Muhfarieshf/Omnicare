@@ -5,28 +5,52 @@
  * @var \Cake\Collection\CollectionInterface|string[] $departments
  */
 ?>
-<div class="row">
-    <aside class="column">
-        <div class="side-nav">
-            <h4 class="heading"><?= __('Actions') ?></h4>
-            <?= $this->Html->link(__('List Doctors'), ['action' => 'index'], ['class' => 'side-nav-item']) ?>
-        </div>
-    </aside>
-    <div class="column column-80">
-        <div class="doctors form content">
-            <?= $this->Form->create($doctor) ?>
-            <fieldset>
-                <legend><?= __('Add Doctor') ?></legend>
-                <?php
-                    echo $this->Form->control('name');
-                    echo $this->Form->control('department_id', ['options' => $departments]);
-                    echo $this->Form->control('status');
-                    echo $this->Form->control('created_at');
-                    echo $this->Form->control('updated_at');
-                ?>
-            </fieldset>
-            <?= $this->Form->button(__('Submit')) ?>
-            <?= $this->Form->end() ?>
+<div class="container-fluid d-flex justify-content-center" style="max-width:1680px;">
+    <div class="row w-100 justify-content-left">
+        <div class="col-md-10">
+            <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2 mb-0 text-left">Add Doctor</h1>
+                <?= $this->Html->link('Back to List', ['action' => 'index'], ['class' => 'btn btn-secondary']) ?>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <?= $this->Form->create($doctor) ?>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <?= $this->Form->control('name', ['class' => 'form-control']) ?>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <?= $this->Form->control('department_id', ['options' => $departments, 'class' => 'form-select']) ?>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <?= $this->Form->control('status', ['class' => 'form-control']) ?>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <?= $this->Form->control('created_at', ['class' => 'form-control']) ?>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <?= $this->Form->control('updated_at', ['class' => 'form-control']) ?>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <?= $this->Form->button('Add Doctor', ['class' => 'btn btn-primary']) ?>
+                        <?= $this->Html->link('Cancel', ['action' => 'index'], ['class' => 'btn btn-secondary']) ?>
+                    </div>
+                    <?= $this->Form->end() ?>
+                </div>
+            </div>
         </div>
     </div>
 </div>

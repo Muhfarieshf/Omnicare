@@ -1,26 +1,26 @@
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Add Appointment</h1>
-    <?= $this->Html->link('Back to List', ['action' => 'index'], ['class' => 'btn btn-secondary']) ?>
-</div>
-
-<?= $this->Form->create(null) ?>
-<?= $this->Form->control('test', ['value' => 'test']) ?>
-<?= $this->Form->button('Test') ?>
-<?= $this->Form->end() ?>
-
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body">
+<div class="container-fluid d-flex justify-content-center" style="max-width:1680px;">
+    <div class="row w-100 justify-content-left">
+        <div class="col-md-10">
+            <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2 mb-0 text-left">Add Appointment</h1>
+                <?= $this->Html->link('Back to List', ['action' => 'index'], ['class' => 'btn btn-secondary']) ?>
+            </div>
+            <div class="card">
+                <div class="card-body">
                 <?= $this->Form->create($appointment) ?>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <?= $this->Form->control('patient_id', [
-                                    'options' => $patients,
-                                    'class' => 'form-select',
-                                    'empty' => 'Select Patient'
-                                ]) ?>
+                                <?php if (isset($currentUser) && $currentUser->role === 'patient' && !empty($currentUser->patient_id)): ?>
+                                    <?= $this->Form->hidden('patient_id', ['value' => $currentUser->patient_id]) ?>
+                                    <div class="form-control-plaintext"><strong>Patient:</strong> <?= h($currentUser->username) ?></div>
+                                <?php else: ?>
+                                    <?= $this->Form->control('patient_id', [
+                                        'options' => $patients,
+                                        'class' => 'form-select',
+                                        'empty' => 'Select Patient'
+                                    ]) ?>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <div class="col-md-6">

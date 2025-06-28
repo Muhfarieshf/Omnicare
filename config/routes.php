@@ -7,16 +7,16 @@ return static function (RouteBuilder $routes) {
     $routes->setRouteClass('DashedRoute');
 
     $routes->scope('/', function (RouteBuilder $builder) {
-        // Default route to login
-        $builder->connect('/', ['controller' => 'Users', 'action' => 'login']);
+        // Default route to OmniCare homepage
+        $builder->connect('/', ['controller' => 'Pages', 'action' => 'home']);
         
         // Dashboard route
         $builder->connect('/dashboard', ['controller' => 'Appointments', 'action' => 'dashboard']);
         
         // Authentication routes
-        $builder->connect('/login', ['controller' => 'Users', 'action' => 'login']);
-        $builder->connect('/register', ['controller' => 'Users', 'action' => 'register']);
-        $builder->connect('/logout', ['controller' => 'Users', 'action' => 'logout']);
+       $builder->connect('/users/login', ['controller' => 'Users', 'action' => 'login']);
+        $builder->connect('/users/register', ['controller' => 'Users', 'action' => 'register']);
+        $builder->connect('/users/logout', ['controller' => 'Users', 'action' => 'logout']);
 
         // Default CakePHP routes
         $builder->fallbacks('DashedRoute');

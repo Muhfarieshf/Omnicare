@@ -1,5 +1,4 @@
 <?php
-
 // src/Controller/AppController.php
 namespace App\Controller;
 
@@ -14,6 +13,8 @@ class AppController extends Controller
 
         $this->loadComponent('Flash');
         $this->loadComponent('Authentication.Authentication');
+        
+       
         $this->loadComponent('Authorization.Authorization');
     }
 
@@ -21,62 +22,37 @@ class AppController extends Controller
     {
         parent::beforeFilter($event);
         
-        // Configure unauthenticated actions
-        $this->Authentication->addUnauthenticatedActions(['login', 'register']);
+        // Configure the login and logout actions to not require authentication
+        $this->Authentication->addUnauthenticatedActions(['login', 'logout', 'testAuth', 'clearSession', 'testRedirect', 'debugDoctor', 'home']);
+
+        // Fix for session/cookie issues after logout: clear identity and session fully
+        if ($this->request->getParam('action') === 'logout') {
+            $this->Authentication->logout();
+            $this->request->getSession()->destroy();
+            $this->request->getSession()->renew();
+            // Optionally clear the identity cookie if set
+            if (isset($_COOKIE['CookieAuth'])) {
+                setcookie('CookieAuth', '', time() - 3600, '/');
+            }
+        }
         
-        // Set user identity for views - but don't check authorization during login
+        // Set user identity for views
         if ($identity = $this->Authentication->getIdentity()) {
             $this->set('currentUser', $identity);
             
-            // Skip authorization check for login/logout actions to prevent conflicts
-            $controller = $this->request->getParam('controller');
-            $action = $this->request->getParam('action');
-            
-            if (!($controller === 'Users' && in_array($action, ['login', 'logout', 'register']))) {
-                if (!$this->isAuthorized()) {
-                    $this->set('authorizationFailed', true);
-                }
+            // TEMPORARILY DISABLE authorization check for testing
+            /*
+            // Check authorization for authenticated users
+            if (!$this->isAuthorized()) {
+                $this->Flash->error(__('You are not authorized to access that page.'));
+                return $this->redirect(['controller' => 'Users', 'action' => 'logout']);
             }
-        }
-    }
-
-    public function beforeRender(EventInterface $event)
-    {
-        parent::beforeRender($event);
-        
-        // Handle authorization failures after request processing
-        if ($this->viewBuilder()->getVar('authorizationFailed')) {
-            $this->Flash->error(__('You are not authorized to access that page.'));
-            // Redirect to appropriate dashboard instead of logout
-            $identity = $this->Authentication->getIdentity();
-            if ($identity) {
-                $redirect = $this->_getDefaultRedirect($identity->getOriginalData());
-                return $this->redirect($redirect);
-            }
-            return $this->redirect(['controller' => 'Users', 'action' => 'login']);
+            */
         }
     }
 
     /**
-     * Get default redirect based on user role
-     */
-    private function _getDefaultRedirect($user)
-    {
-        switch ($user['role']) {
-            case 'admin':
-            case 'staff':
-                return ['controller' => 'Appointments', 'action' => 'dashboard'];
-            case 'doctor':
-                return ['controller' => 'Doctors', 'action' => 'dashboard'];
-            case 'patient':
-                return ['controller' => 'Patients', 'action' => 'dashboard'];
-            default:
-                return ['controller' => 'Appointments', 'action' => 'dashboard'];
-        }
-    }
-
-    /**
-     * Optimized authorization check
+     * Check if user has permission to access the current action
      */
     public function isAuthorized($user = null)
     {
@@ -98,61 +74,71 @@ class AppController extends Controller
             return true;
         }
 
-        // Common actions all authenticated users can access
-        $commonActions = ['logout', 'dashboard'];
-        if (in_array($action, $commonActions)) {
+        // Allow access to logout for all authenticated users
+        if ($controller === 'Users' && $action === 'logout') {
             return true;
         }
 
-        // Role-specific access control with faster lookups
-        return $this->_checkRoleAccess($user['role'], $controller, $action);
+        // Role-specific access control (removed staff role)
+        switch ($user['role']) {
+            case 'doctor':
+                return $this->_checkDoctorAccess($controller, $action);
+            case 'patient':
+                return $this->_checkPatientAccess($controller, $action);
+            default:
+                return false;
+        }
     }
 
     /**
-     * Faster role-based access checking
+     * Check doctor access permissions
      */
-    private function _checkRoleAccess($role, $controller, $action)
+    private function _checkDoctorAccess($controller, $action)
     {
-        // Define role permissions in arrays for faster lookup
-        $permissions = [
-            'doctor' => [
-                'allowed_controllers' => ['Doctors', 'Appointments', 'Patients'],
-                'restricted' => [
-                    'Patients' => ['delete', 'add'] // Doctors can't add/delete patients
-                ]
-            ],
-            'patient' => [
-                'allowed_controllers' => ['Patients', 'Appointments'],
-                'allowed_actions' => ['dashboard', 'view', 'index', 'edit']
-            ],
-            'staff' => [
-                'allowed_controllers' => ['Appointments', 'Patients', 'Doctors', 'Departments']
-            ]
-        ];
+        $allowedControllers = ['Doctors', 'Appointments', 'Patients'];
+        $restrictedActions = ['delete']; // Doctors can't delete patients
 
-        if (!isset($permissions[$role])) {
+        if (!in_array($controller, $allowedControllers)) {
             return false;
         }
 
-        $rolePerms = $permissions[$role];
-
-        // Check if controller is allowed
-        if (!in_array($controller, $rolePerms['allowed_controllers'])) {
-            return false;
-        }
-
-        // Check specific restrictions
-        if (isset($rolePerms['restricted'][$controller]) && 
-            in_array($action, $rolePerms['restricted'][$controller])) {
-            return false;
-        }
-
-        // Check if specific actions are required (for patients)
-        if (isset($rolePerms['allowed_actions']) && 
-            !in_array($action, $rolePerms['allowed_actions'])) {
+        if ($controller === 'Patients' && in_array($action, $restrictedActions)) {
             return false;
         }
 
         return true;
     }
+
+    /**
+     * Check patient access permissions
+     */
+    private function _checkPatientAccess($controller, $action)
+    {
+        $allowedControllers = ['Patients', 'Appointments'];
+        $allowedActions = ['dashboard', 'view', 'index'];
+
+        return in_array($controller, $allowedControllers) && in_array($action, $allowedActions);
+    }
+
+    public function dashboard()
+    {
+        $user = $this->Authentication->getIdentity();
+        
+        if (!$user) {
+            return $this->redirect(['controller' => 'Users', 'action' => 'login']);
+        }
+        
+        switch ($user->role) {
+            case 'admin':
+                return $this->redirect(['controller' => 'Appointments', 'action' => 'dashboard']);
+            case 'doctor':
+                return $this->redirect(['controller' => 'Appointments', 'action' => 'dashboard']);
+            case 'patient':
+                return $this->redirect(['controller' => 'Patients', 'action' => 'dashboard']);
+            default:
+                $this->Flash->error(__('Invalid user role.'));
+                return $this->redirect(['controller' => 'Users', 'action' => 'logout']);
+        }
+    }
+
 }

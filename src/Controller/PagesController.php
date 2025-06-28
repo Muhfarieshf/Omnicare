@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+
+
 /**
  * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
@@ -31,6 +33,15 @@ use Cake\View\Exception\MissingTemplateException;
  */
 class PagesController extends AppController
 {
+    /**
+     * OmniCare Home Page (public, no authentication required)
+     */
+    public function home(): ?Response
+    {
+        // No authentication required for homepage
+        $this->viewBuilder()->setLayout('default');
+        return $this->render('home');
+    }
     /**
      * Displays a view
      *

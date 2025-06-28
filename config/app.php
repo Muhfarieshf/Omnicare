@@ -174,8 +174,8 @@ return [
 
     'Session' => [
     'defaults' => 'php',
-    'timeout' => 240, // 4 hours
-    'cookieTimeout' => 240,
+    'timeout' => 4320,
+    'cookieTimeout' => 43200,
     'ini' => [
         'session.cookie_secure' => true,
         'session.cookie_httponly' => true,

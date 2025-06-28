@@ -18,6 +18,10 @@
     <?= $this->fetch('css') ?>
 
     <style>
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
         .sidebar {
             position: fixed;
             top: 56px; /* Height of navbar */
@@ -36,8 +40,8 @@
         }
         .main-content {
             margin-left: 240px;
-            margin-top: 56px; /* Height of navbar */
-            padding: 20px;
+            margin-top: 0; /* Remove extra space below topbar */
+            padding: 20px 20px 20px 20px;
             min-height: calc(100vh - 56px);
         }
         
@@ -58,38 +62,39 @@
                 margin-left: 0;
             }
         }
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 1050;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+        body {
+            margin: 0;
+            padding: 0;
+        }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
-        <div class="container-fluid">
-            <?= $this->Html->link('Hospital Appointment System', ['controller' => 'Appointments', 'action' => 'dashboard'], ['class' => 'navbar-brand']) ?>
-            
-            <!-- Mobile sidebar toggle -->
-            <button class="navbar-toggler d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="navbar-nav ms-auto">
-                <?php if ($this->getRequest()->getAttribute('identity')): 
-                    $currentUser = $this->getRequest()->getAttribute('identity');
-                ?>
-                    <span class="navbar-text me-3">
-                        Welcome, <?= h($currentUser->username) ?>
-                        <span class="badge bg-light text-dark ms-1"><?= ucfirst($currentUser->role) ?></span>
-                    </span>
-                    <?= $this->Html->link('Logout', ['controller' => 'Users', 'action' => 'logout'], ['class' => 'btn btn-outline-light btn-sm']) ?>
-                <?php endif; ?>
-            </div>
-        </div>
-    </nav>
+    <?php
+    // Determine if the current page is the homepage
+    $isHome = $this->getRequest()->getParam('controller') === 'Pages' && $this->getRequest()->getParam('action') === 'home';
+    if ($isHome) {
+        echo $this->element('topbar_home');
+    } else {
+        echo $this->element('topbar');
+    }
+    ?>
 
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <?php if ($this->getRequest()->getAttribute('identity')): 
-                $currentUser = $this->getRequest()->getAttribute('identity');
+            <?php
+            // Only show sidebar if authenticated and NOT on the homepage
+            $identity = $this->getRequest()->getAttribute('identity');
+            $isHome = $this->getRequest()->getParam('controller') === 'Pages' && $this->getRequest()->getParam('action') === 'home';
+            if ($identity && !$isHome):
+                $currentUser = $identity;
                 $userRole = $currentUser->role;
             ?>
             <nav id="sidebarMenu" class="sidebar collapse d-md-block">
@@ -133,6 +138,11 @@
                             <li class="nav-item">
                                 <?= $this->Html->link('<i class="fas fa-chart-area"></i> My Dashboard', 
                                     ['controller' => 'Doctors', 'action' => 'dashboard'], 
+                                    ['class' => 'nav-link', 'escape' => false]) ?>
+                            </li>
+                            <li class="nav-item">
+                                <?= $this->Html->link('<i class="fas fa-chart-bar"></i> My Reports', 
+                                    ['controller' => 'Reports', 'action' => 'index'], 
                                     ['class' => 'nav-link', 'escape' => false]) ?>
                             </li>
                             <li class="nav-item">
@@ -198,7 +208,7 @@
             <?php endif; ?>
 
             <!-- Main content -->
-            <main class="<?= $this->getRequest()->getAttribute('identity') ? 'main-content' : 'no-sidebar' ?>">
+            <main class="<?= $this->getRequest()->getAttribute('identity') ? 'main-content' : 'no-sidebar' ?>" style="margin-top: 56px;">
                 <?= $this->Flash->render() ?>
                 <?= $this->fetch('content') ?>
             </main>
@@ -207,5 +217,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <?= $this->fetch('script') ?>
+    <?= $this->element('footer') ?>
 </body>
 </html>

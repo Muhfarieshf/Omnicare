@@ -1,19 +1,24 @@
-<!-- templates/Doctors/dashboard.php -->
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Doctor Dashboard</h1>
-    <?php if (isset($doctorInfo) && $doctorInfo): ?>
-        <div class="btn-toolbar mb-2 mb-md-0">
-            <span class="badge bg-success fs-6">Dr. <?= h($doctorInfo->name) ?></span>
-            <?php if ($doctorInfo->department): ?>
-                <span class="badge bg-info fs-6 ms-2"><?= h($doctorInfo->department->name) ?></span>
-            <?php endif; ?>
-        </div>
-    <?php elseif (isset($currentUser)): ?>
-        <div class="btn-toolbar mb-2 mb-md-0">
-            <span class="badge bg-secondary fs-6">Welcome, <?= h($currentUser->username) ?></span>
-        </div>
-    <?php endif; ?>
-</div>
+<?php
+// Block access for non-doctors (including admins and patients)
+if (!isset($currentUser) || $currentUser->role !== 'doctor') {
+    echo '<div class="alert alert-danger mt-4"><h4>Access Denied</h4><p>You do not have permission to view this page.</p></div>';
+    return;
+}
+?>
+<div class="container-fluid d-flex justify-content-center" style="max-width:1680px;">
+    <div class="row w-100 justify-content-left">
+        <div class="col-md-10">
+            <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2 mb-0 text-left">Doctor Dashboard</h1>
+                <?php if (isset($doctorInfo) && $doctorInfo): ?>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <span class="badge bg-success fs-6"><?= h($doctorInfo->name) ?></span>
+                        <?php if ($doctorInfo->department): ?>
+                            <span class="badge bg-info fs-6 ms-2"><?= h($doctorInfo->department->name) ?></span>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
 
 <?php if (isset($currentUser) && !$currentUser->doctor_id): ?>
     <div class="alert alert-warning">
@@ -31,7 +36,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h4><?= isset($appointmentStats['today_count']) ? $appointmentStats['today_count'] : 0 ?></h4>
+                        <h4><?= isset($todaysCount) ? $todaysCount : 0 ?></h4>
                         <p class="mb-0">Today's Appointments</p>
                     </div>
                     <div class="align-self-center">
@@ -46,7 +51,17 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h4><?= isset($appointmentStats['completed_today']) ? $appointmentStats['completed_today'] : 0 ?></h4>
+                        <h4>
+                            <?php
+                            $completedToday = 0;
+                            if (isset($todaysAppointments) && is_array($todaysAppointments)) {
+                                foreach ($todaysAppointments as $appt) {
+                                    if ($appt->status === 'Completed') $completedToday++;
+                                }
+                            }
+                            echo $completedToday;
+                            ?>
+                        </h4>
                         <p class="mb-0">Completed Today</p>
                     </div>
                     <div class="align-self-center">
@@ -61,7 +76,17 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h4><?= isset($appointmentStats['pending_count']) ? $appointmentStats['pending_count'] : 0 ?></h4>
+                        <h4>
+                            <?php
+                            $pendingToday = 0;
+                            if (isset($todaysAppointments) && is_array($todaysAppointments)) {
+                                foreach ($todaysAppointments as $appt) {
+                                    if ($appt->status === 'Scheduled' || $appt->status === 'Pending') $pendingToday++;
+                                }
+                            }
+                            echo $pendingToday;
+                            ?>
+                        </h4>
                         <p class="mb-0">Pending Today</p>
                     </div>
                     <div class="align-self-center">
@@ -89,7 +114,7 @@
 </div>
 
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-6">
         <div class="card">
             <div class="card-header">
                 <h5><i class="fas fa-calendar-day"></i> Today's Schedule - <?= date('M d, Y') ?></h5>
@@ -161,7 +186,7 @@
         </div>
     </div>
     
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="card">
             <div class="card-header">
                 <h5><i class="fas fa-calendar-week"></i> Upcoming Appointments</h5>
@@ -206,13 +231,10 @@
             </div>
             <div class="card-body">
                 <p><strong>Name:</strong> Dr. <?= h($doctorInfo->name) ?></p>
-                <p><strong>Specialization:</strong> <?= h($doctorInfo->specialization) ?></p>
                 <?php if ($doctorInfo->department): ?>
                 <p><strong>Department:</strong> <?= h($doctorInfo->department->name) ?></p>
                 <?php endif; ?>
-                <p><strong>Contact:</strong> <?= h($doctorInfo->contact_number) ?></p>
-                <p><strong>Email:</strong> <?= h($doctorInfo->email) ?></p>
-                
+                <p><strong>Email:</strong> <?= h($currentUser->email ?? 'N/A') ?></p>
                 <div class="text-center">
                     <?= $this->Html->link(
                         'Edit Profile', 
