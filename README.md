@@ -38,26 +38,26 @@ OmniCare is a hospital appointment booking system built with CakePHP 5.x. It pro
 ## Installation (OmniCare)
 
 1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/Muhfarieshf/Omnicare.git
-   cd Omnicare
-   ```
+    ```bash
+    git clone https://github.com/Muhfarieshf/Omnicare.git
+    cd Omnicare
+    ```
 2. **Install PHP dependencies:**
-   ```bash
-   composer install
-   ```
+    ```bash
+    composer install
+    ```
 3. **Configure your environment:**
-   - Copy `config/app_local.example.php` to `config/app_local.php`.
-   - Edit `config/app_local.php` and set your database credentials and other settings.
+    - Copy `config/app_local.example.php` to `config/app_local.php`.
+    - Edit `config/app_local.php` and set your database credentials and other settings.
 4. **Import the database schema:**
-   - Create a MySQL database (e.g., `hospital_appointment_system`).
-   - Import `hospital_appointment_system.sql` into your database.
+    - Create a MySQL database (e.g., `hospital_appointment_system`).
+    - Import `hospital_appointment_system.sql` into your database.
 5. **Start the CakePHP server:**
-   ```bash
-   bin/cake server -p 8765
-   ```
+    ```bash
+    bin/cake server -p 8765
+    ```
 6. **Access the app:**
-   - Open [http://localhost:8765](http://localhost:8765) in your browser.
+    - Open [http://localhost:8765](http://localhost:8765) in your browser.
 
 > For more details, see the CakePHP documentation below.
 
