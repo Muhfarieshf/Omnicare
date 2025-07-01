@@ -40,14 +40,6 @@ class AppController extends Controller
         if ($identity = $this->Authentication->getIdentity()) {
             $this->set('currentUser', $identity);
             
-            // TEMPORARILY DISABLE authorization check for testing
-            /*
-            // Check authorization for authenticated users
-            if (!$this->isAuthorized()) {
-                $this->Flash->error(__('You are not authorized to access that page.'));
-                return $this->redirect(['controller' => 'Users', 'action' => 'logout']);
-            }
-            */
         }
     }
 

@@ -324,27 +324,15 @@ body {
         </div>
         <div class="card-body">
             <?= $this->Form->create() ?>
-                <div class="form-row">
+                <div class="form-row single">
                     <div class="form-group">
                         <label class="form-label">
                             <i class="fas fa-user"></i>
-                            First Name
+                            Full Name
                         </label>
-                        <?= $this->Form->control('first_name', [
+                        <?= $this->Form->control('name', [
                             'class' => 'form-control',
-                            'placeholder' => 'First Name',
-                            'required' => true,
-                            'label' => false
-                        ]) ?>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <i class="fas fa-user"></i>
-                            Last Name
-                        </label>
-                        <?= $this->Form->control('last_name', [
-                            'class' => 'form-control',
-                            'placeholder' => 'Last Name',
+                            'placeholder' => 'Full Name',
                             'required' => true,
                             'label' => false
                         ]) ?>

@@ -300,8 +300,8 @@ body {
 
 /* For register page specifically, adjust the margin-top */
 .register-container {
-    margin-top: 0; /* Remove the 80px margin-top since we now use padding-top */
-    padding-top: 100px; /* Slightly more padding for register page due to larger form */
+    margin-top: 0; 
+    padding-top: 100px; 
 }
 
 /* Ensure body background stays behind everything */
@@ -327,7 +327,7 @@ body::before {
     box-shadow: 
         0 8px 24px rgba(0, 0, 0, 0.1),
         0 0 0 1px rgba(0, 0, 0, 0.05);
-    /* Ensure z-index doesn't conflict with topbar */
+    
     z-index: 2;
 }
 

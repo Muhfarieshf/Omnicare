@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OmniCare - Hospital Management System</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <?php // Ensure CakePHP helpers and elements work on home page ?>
+    <?= $this->Html->css(['style']) ?>
+    <?= $this->fetch('meta') ?>
+    <?= $this->fetch('css') ?>
+    <?= $this->fetch('script') ?>
     <style>
         * {
             margin: 0;
@@ -496,11 +501,11 @@
                     <span class="stat-label">Available</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">1000+</span>
+                    <span class="stat-number">100+</span>
                     <span class="stat-label">Patients</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">50+</span>
+                    <span class="stat-number">10+</span>
                     <span class="stat-label">Doctors</span>
                 </div>
                 <div class="stat-item">

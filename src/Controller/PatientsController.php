@@ -20,6 +20,10 @@ class PatientsController extends AppController
 
     // If the user is a patient, always show their own record
     if ($currentUser && $currentUser->role === 'patient') {
+        if (!$currentUser->patient_id) {
+            $this->Flash->error('Your patient profile is incomplete. Please contact support.');
+            return $this->redirect(['controller' => 'Users', 'action' => 'logout']);
+        }
         $id = $currentUser->patient_id;
     }
 

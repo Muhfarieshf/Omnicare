@@ -194,6 +194,22 @@ $currentUser = $this->getRequest()->getAttribute('identity');
 .patient-name {
     font-weight: 600;
     color: #1f1f1f;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.patient-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #0066cc, #004499);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .patient-email {
@@ -272,30 +288,12 @@ $currentUser = $this->getRequest()->getAttribute('identity');
     font-style: italic;
 }
 
-/* Action Buttons with Always-Visible Labels */
+/* Action Buttons */
 .action-buttons {
     display: flex;
     gap: 6px;
     align-items: center;
-}
-
-.action-buttons .btn {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 6px 8px;
-}
-
-.action-buttons .btn::after {
-    content: attr(data-label);
-    font-size: 10px;
-    opacity: 0.7;
-}
-
-/* Remove tooltip styles */
-.btn[title]:hover::after,
-.btn[title]:hover::before {
-    display: none;
+    justify-content: center;
 }
 
 /* Empty State */
@@ -387,6 +385,58 @@ $currentUser = $this->getRequest()->getAttribute('identity');
     font-size: 14px;
 }
 
+/* Stats Summary */
+.stats-summary {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+    align-items: center;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+}
+
+.stat-icon.patients {
+    background: linear-gradient(135deg, #0066cc, #004499);
+}
+
+.stat-icon.active {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.stat-content h4 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f1f1f;
+    margin: 0 0 2px 0;
+}
+
+.stat-content p {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .table th:nth-child(8),
@@ -412,6 +462,12 @@ $currentUser = $this->getRequest()->getAttribute('identity');
         font-size: 24px;
     }
     
+    .stats-summary {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+    
     .table th:nth-child(1),
     .table td:nth-child(1) {
         display: none; /* Hide ID column on mobile */
@@ -421,6 +477,18 @@ $currentUser = $this->getRequest()->getAttribute('identity');
     .table td {
         padding: 12px 8px;
         font-size: 12px;
+    }
+    
+    .patient-name {
+        flex-direction: column;
+        gap: 4px;
+        text-align: center;
+    }
+    
+    .patient-avatar {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
     }
     
     .action-buttons {
@@ -460,6 +528,13 @@ $currentUser = $this->getRequest()->getAttribute('identity');
 }
 </style>
 
+<!-- Search widget positioned at the top, outside main container -->
+<?= $this->element('search_widget', [
+    'title' => 'Search Patients',
+    'placeholder' => 'Search by name, email, phone...'
+]) ?>
+
+<!-- Main patients container -->
 <div class="patients-container">
     <div class="page-header">
         <h3 class="page-title">
@@ -474,6 +549,35 @@ $currentUser = $this->getRequest()->getAttribute('identity');
             ) ?>
         <?php endif; ?>
     </div>
+
+    <!-- Optional Stats Summary -->
+    <?php if (isset($totalPatients) || isset($activePatients)): ?>
+    <div class="stats-summary">
+        <?php if (isset($totalPatients)): ?>
+        <div class="stat-item">
+            <div class="stat-icon patients">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h4><?= $totalPatients ?></h4>
+                <p>Total Patients</p>
+            </div>
+        </div>
+        <?php endif; ?>
+        
+        <?php if (isset($activePatients)): ?>
+        <div class="stat-item">
+            <div class="stat-icon active">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stat-content">
+                <h4><?= $activePatients ?></h4>
+                <p>Active Patients</p>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
 
     <div class="table-container">
         <?php if (empty($patients)): ?>
@@ -494,7 +598,7 @@ $currentUser = $this->getRequest()->getAttribute('identity');
                     <thead>
                         <tr>
                             <th><?= $this->Paginator->sort('id', 'ID') ?></th>
-                            <th><?= $this->Paginator->sort('name', 'Name') ?></th>
+                            <th><?= $this->Paginator->sort('name', 'Patient') ?></th>
                             <th><?= $this->Paginator->sort('gender', 'Gender') ?></th>
                             <th><?= $this->Paginator->sort('dob', 'Date of Birth') ?></th>
                             <th><?= $this->Paginator->sort('contact_number', 'Phone') ?></th>
@@ -502,7 +606,7 @@ $currentUser = $this->getRequest()->getAttribute('identity');
                             <th><?= $this->Paginator->sort('status', 'Status') ?></th>
                             <th><?= $this->Paginator->sort('created_at', 'Created') ?></th>
                             <th><?= $this->Paginator->sort('updated_at', 'Updated') ?></th>
-                            <th><?= __('Actions') ?></th>
+                            <th style="text-align: center;"><?= __('Actions') ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -510,7 +614,12 @@ $currentUser = $this->getRequest()->getAttribute('identity');
                         <tr>
                             <td><?= $this->Number->format($patient->id) ?></td>
                             <td>
-                                <div class="patient-name"><?= h($patient->name) ?></div>
+                                <div class="patient-name">
+                                    <div class="patient-avatar">
+                                        <?= strtoupper(substr($patient->name, 0, 1)) ?>
+                                    </div>
+                                    <span><?= h($patient->name) ?></span>
+                                </div>
                             </td>
                             <td>
                                 <?php if ($patient->gender): ?>
@@ -570,9 +679,9 @@ $currentUser = $this->getRequest()->getAttribute('identity');
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <?= $this->Html->link('<i class="fas fa-eye"></i>', ['action' => 'view', $patient->id], ['class' => 'btn btn-sm btn-outline-primary', 'escape' => false, 'data-label' => 'View']) ?>
+                                    <?= $this->Html->link('<i class="fas fa-eye"></i>', ['action' => 'view', $patient->id], ['class' => 'btn btn-sm btn-outline-primary', 'escape' => false]) ?>
                                     <?php if ($currentUser && $currentUser->role !== 'doctor'): ?>
-                                        <?= $this->Html->link('<i class="fas fa-edit"></i>', ['action' => 'edit', $patient->id], ['class' => 'btn btn-sm btn-outline-secondary', 'escape' => false, 'data-label' => 'Edit']) ?>
+                                        <?= $this->Html->link('<i class="fas fa-edit"></i>', ['action' => 'edit', $patient->id], ['class' => 'btn btn-sm btn-outline-secondary', 'escape' => false]) ?>
                                         <?= $this->Form->postLink(
                                             '<i class="fas fa-trash"></i>',
                                             ['action' => 'delete', $patient->id],
@@ -580,8 +689,7 @@ $currentUser = $this->getRequest()->getAttribute('identity');
                                                 'method' => 'delete',
                                                 'confirm' => __('Are you sure you want to delete # {0}?', $patient->id),
                                                 'class' => 'btn btn-sm btn-outline-danger',
-                                                'escape' => false,
-                                                'data-label' => 'Delete'
+                                                'escape' => false
                                             ]
                                         ) ?>
                                     <?php endif; ?>

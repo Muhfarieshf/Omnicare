@@ -134,7 +134,7 @@
     text-decoration: underline;
 }
 
-/* Status and Gender Badges */
+
 .status-badge {
     display: inline-flex;
     align-items: center;
@@ -168,7 +168,7 @@
 
 .gender-badge.male {
     background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
+    color: #white;
 }
 
 .gender-badge.female {
@@ -183,7 +183,7 @@
 
 /* Age display */
 .age-display {
-    color: #666;
+    color: #ffffff;
     font-size: 13px;
     font-style: italic;
 }

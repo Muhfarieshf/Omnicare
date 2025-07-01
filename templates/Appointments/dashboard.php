@@ -388,7 +388,15 @@ body::before {
 }
 </style>
 
-<div class="dashboard-container">
+<div class="container-fluid">
+    <!-- Add search widget at the top -->
+    <?= $this->element('search_widget', [
+        'title' => 'Quick Search',
+        'placeholder' => 'Search appointments, patients...'
+    ]) ?>
+
+    <!-- Rest of your dashboard content -->
+    <div class="dashboard-container">
     <!-- Dashboard Header -->
     <div class="dashboard-header">
         <h1 class="dashboard-title">

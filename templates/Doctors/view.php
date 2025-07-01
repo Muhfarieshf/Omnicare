@@ -39,7 +39,7 @@
     color: #0066cc;
 }
 
-/* Doctor Info Card */
+
 .doctor-info-card {
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(20px);
@@ -124,7 +124,7 @@
     text-decoration: underline;
 }
 
-/* Status Badge */
+
 .status-badge {
     display: inline-flex;
     align-items: center;

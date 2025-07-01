@@ -403,7 +403,7 @@
             </div>
 
             <div class="button-group">
-                <?= $this->Form->button('<i class="fas fa-save"></i> Save Changes', [
+                <?= $this->Form->button(' Save Changes', [
                     'class' => 'btn btn-success',
                     'escape' => false,
                     'id' => 'updateBtn'

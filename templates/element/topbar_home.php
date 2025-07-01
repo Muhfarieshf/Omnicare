@@ -38,7 +38,7 @@
 
 .topbar-logo a {
     text-decoration: none !important;
-    color: #1f1f1f !important;
+    color: #0066cc !important;
     font-weight: 600 !important;
     font-size: 18px !important;
     display: flex !important;
@@ -48,10 +48,7 @@
     white-space: nowrap !important;
 }
 
-.topbar-logo a:hover {
-    color: #0066cc !important;
-    text-decoration: none !important;
-}
+
 
 /* RIGHT SIDE - Actions (Force right alignment) */
 .topbar-actions {
@@ -134,7 +131,7 @@
     <div class="topbar-container">
         <div class="topbar-logo">
             <?= $this->Html->link(
-                '<span>🏥 OmniCare</span>',
+                '<i class="fas fa-hospital"></i><span>OmniCare</span>',
                 ['controller' => 'Pages', 'action' => 'home'],
                 ['escape' => false]
             ) ?>

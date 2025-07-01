@@ -10,6 +10,8 @@ class User extends Entity
         'password' => true,
         'role' => true,
         'status' => true,
+        'patient_id' => true,    
+        'doctor_id' => true,
         'created_at' => true,
         'updated_at' => true,
     ];

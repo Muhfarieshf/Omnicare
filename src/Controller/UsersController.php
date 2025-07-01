@@ -6,7 +6,7 @@ use App\Controller\AppController;
 use Cake\Event\EventInterface;
 
 class UsersController extends AppController
-{
+{   
     public function beforeFilter(EventInterface $event)
     {
         parent::beforeFilter($event);
@@ -44,35 +44,64 @@ class UsersController extends AppController
     }
 
     public function register()
-    {
-        $this->viewBuilder()->setLayout('auth');
+{
+    $this->viewBuilder()->setLayout('auth');
 
     $user = $this->Users->newEmptyEntity();
-    
+
     if ($this->request->is('post')) {
         $data = $this->request->getData();
-        
-        // Remove confirm_password from the data since it's not a database field
         unset($data['confirm_password']);
-        
-        // Set default role for new registrations (assuming patients)
         $data['role'] = 'patient';
-        
-        $user = $this->Users->patchEntity($user, $data);
-        
+        $data['status'] = 'active';
+
+        // Load Patients table
+        $patientsTable = $this->getTableLocator()->get('Patients');
+
+        // Prepare patient data
+        $patientData = [
+            'name' => $data['name'] ?? ($data['username'] ?? ''),
+            'email' => $data['email'] ?? null,
+            'gender' => $data['gender'] ?? null,
+            'dob' => $data['dob'] ?? null,
+            'contact_number' => $data['contact_number'] ?? null,
+            'status' => 'active'
+        ];
+
+        $patient = $patientsTable->newEmptyEntity();
+        $patient = $patientsTable->patchEntity($patient, $patientData);
+
+        if ($patientsTable->save($patient)) {
+            // Remove patient_id from data for initial patch
+            $userDataWithoutPatientId = $data;
+            unset($userDataWithoutPatientId['patient_id']);
+            
+            $user = $this->Users->patchEntity($user, $userDataWithoutPatientId);
+            
+            // Set patient_id directly on the entity
+            $user->patient_id = $patient->id;
+            
+        } else {
+            $this->Flash->error(__('Could not create patient profile. Please try again.'));
+            $this->set(compact('user'));
+            return;
+        }
+
         // Hash the password
         if (!empty($user->password)) {
             $user->password = password_hash($user->password, PASSWORD_DEFAULT);
         }
-        
+
         if ($this->Users->save($user)) {
             $this->Flash->success(__('Registration successful! You can now login with your credentials.'));
             return $this->redirect(['action' => 'login']);
         } else {
+            // Rollback patient if user creation fails
+            $patientsTable->delete($patient);
             $this->Flash->error(__('Registration failed. Please check the form for errors and try again.'));
         }
     }
-    
+
     $this->set(compact('user'));
 }
 
@@ -94,33 +123,6 @@ class UsersController extends AppController
         return $this->redirect(['controller' => 'Users', 'action' => 'login']);
     }
 
-    // Temporary test method - remove after testing
-    public function testAuth()
-    {
-        $identity = $this->Authentication->getIdentity();
-        if ($identity) {
-            echo "Authenticated as: " . $identity->username . " (Role: " . $identity->role . ")";
-        } else {
-            echo "Not authenticated";
-        }
-        exit;
-    }
-
-    // Temporary method to clear all session data - remove after testing
-    public function clearSession()
-    {
-        $this->Authentication->logout();
-        $this->request->getSession()->destroy();
-        $this->request->getSession()->renew();
-        
-        // Note: Cookie clearing simplified for CakePHP 5.x compatibility
-        // Session destruction handles most cleanup
-        
-        echo "Session cleared completely. You can now try logging in.";
-        echo '<br><a href="/users/login">Go to Login</a>';
-        exit;
-    }
-
     // Test redirect logic
     public function testRedirect()
     {
@@ -137,106 +139,36 @@ class UsersController extends AppController
         exit;
     }
 
-    // Debug doctor lookup
-    public function debugDoctor()
-    {
-        $user = $this->Authentication->getIdentity();
-        if (!$user) {
-            echo "Not logged in";
-            exit;
-        }
-        
-        echo "<h3>Debug Doctor Lookup</h3>";
-        echo "Username: " . $user->username . "<br>";
-        echo "Role: " . $user->role . "<br><br>";
-        
-        // Test username conversion (copy method from DoctorsController)
-        $doctorName = $this->_convertUsernameToName($user->username);
-        echo "Converted name: " . $doctorName . "<br><br>";
-        
-        // Load Doctors table
-        $doctorsTable = $this->getTableLocator()->get('Doctors');
-        
-        // Show all doctors
-        echo "<h4>All Doctors in Database:</h4>";
-        $allDoctors = $doctorsTable->find()->contain(['Departments'])->toArray();
-        foreach ($allDoctors as $doc) {
-            echo "ID: " . $doc->id . " - Name: '" . $doc->name . "' - Dept: " . $doc->department->name . "<br>";
-        }
-        
-        // Try to find the doctor
-        echo "<br><h4>Search Results for '" . $doctorName . "':</h4>";
-        $doctor = $doctorsTable->find()
-            ->contain(['Departments'])
-            ->where([
-                'OR' => [
-                    ['Doctors.name LIKE' => '%' . $doctorName . '%'],
-                    ['Doctors.name LIKE' => '%Dr. ' . $doctorName . '%'],
-                    ['Doctors.name LIKE' => '%Doctor ' . $doctorName . '%']
-                ]
-            ])
-            ->first();
-            
-        if ($doctor) {
-            echo "✅ Found doctor: '" . $doctor->name . "' (ID: " . $doctor->id . ")";
-        } else {
-            echo "❌ No doctor found for: '" . $doctorName . "'";
-            
-            // Try different search patterns
-            echo "<br><br><h4>Trying Alternative Searches:</h4>";
-            
-            // Search 1: Exact username
-            $search1 = $doctorsTable->find()->where(['Doctors.name LIKE' => '%' . $user->username . '%'])->first();
-            echo "Search 1 (username '" . $user->username . "'): " . ($search1 ? "Found: " . $search1->name : "Not found") . "<br>";
-            
-            // Search 2: Ahmad only
-            $search2 = $doctorsTable->find()->where(['Doctors.name LIKE' => '%Ahmad%'])->first();
-            echo "Search 2 ('Ahmad'): " . ($search2 ? "Found: " . $search2->name : "Not found") . "<br>";
-            
-            // Search 3: Case insensitive
-            $search3 = $doctorsTable->find()->where(['LOWER(Doctors.name) LIKE' => '%' . strtolower($doctorName) . '%'])->first();
-            echo "Search 3 (case insensitive '" . strtolower($doctorName) . "'): " . ($search3 ? "Found: " . $search3->name : "Not found") . "<br>";
-        }
-        
-        exit;
-    }
-
+    
     
 
-    /**
-     * Convert username to name for matching (copy from DoctorsController)
-     */
     private function _convertUsernameToName($username)
     {
-        // Convert dr_ahmad or dr.sarah.johnson to Ahmad or Sarah Johnson
-        // Remove 'dr.' or 'dr_' prefix if it exists
-        $cleanUsername = preg_replace('/^dr[._]/', '', strtolower($username));
-        
-        // Split by dots, underscores, or hyphens
-        $parts = preg_split('/[._-]/', $cleanUsername);
-        
-        // Capitalize each part
+        // Convert username like 'abc' to 'Abc' or 'john.doe' to 'John Doe'
+        $parts = preg_split('/[._-]/', strtolower($username));
         $nameParts = array_map('ucfirst', $parts);
-        
-        // Join with spaces
-        $result = implode(' ', $nameParts);
-        
-        return $result;
+        return implode(' ', $nameParts);
     }
 
-    public function index()
-    {
-        // CakePHP 5.x pagination - pass query directly to paginate()
-        $query = $this->Users->find();
-        $users = $this->paginate($query);
-        $this->set(compact('users'));
-    }
 
-    public function view($id = null)
-    {
-        $user = $this->Users->get($id);
-        $this->set(compact('user'));
-    }
+        public function index()
+        {
+            // CakePHP 5.x pagination - pass query directly to paginate()
+            $query = $this->Users->find();
+            $users = $this->paginate($query);
+            $this->set(compact('users'));
+        }
+
+        public function view($id = null)
+        {
+            $user = $this->Users->get($id);
+            // Check for patient_id if user is a patient
+            if ($user->role === 'patient' && empty($user->patient_id)) {
+                $this->Flash->error('Your patient profile is incomplete. Please contact support.');
+                return $this->redirect(['action' => 'logout']);
+            }
+            $this->set(compact('user'));
+        }
 
     public function add()
     {
@@ -290,4 +222,7 @@ class UsersController extends AppController
 
         return $this->redirect(['action' => 'index']);
     }
+
+    
+
 }
