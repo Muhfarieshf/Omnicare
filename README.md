@@ -10,7 +10,8 @@ OmniCare is a hospital appointment booking system built with CakePHP 5.x. It pro
 -   **Dashboards:** Custom dashboards for Admins, Doctors, and Patients
 -   **Patient & Doctor Management:** CRUD operations for patients and doctors
 -   **Department Management:** Organize doctors by departments
--   **Reports:** (Future release) Generate and print appointment and patient reports (feature not yet available)
+-   **Role-Based Search:** Powerful, role-aware search for patients, doctors, appointments, and more. Includes a main search widget and a topbar quick search with AJAX dropdown results.
+-   **Reports:** Generate and print appointment and patient reports. Includes monthly, daily, and doctor-specific report templates for admins and doctors.
 -   **Flash Messaging:** User feedback for actions (success, error, etc.)
 -   **Responsive UI:** Bootstrap-based, clean, and professional design
 
@@ -67,7 +68,17 @@ OmniCare is a hospital appointment booking system built with CakePHP 5.x. It pro
 -   **Book Appointments:** Patients can book with available doctors.
 -   **Manage Data:** Admins manage users, doctors, departments, and appointments.
 -   **Dashboards:** Each role sees relevant stats and quick actions.
--   **Reports:** Admins and doctors can generate printable reports.
+-   **Reports:** Admins and doctors can generate printable reports, including:
+    - Monthly appointment reports
+    - Daily schedule printouts
+    - Doctor-specific patient lists
+  Access these from the Reports section in the navigation bar.
+
+-   **Search:**
+    - Use the main search bar (on dashboard/content pages) to search for patients, doctors, appointments, and departments.
+    - The topbar quick search (always visible) provides instant AJAX-powered results as you type.
+    - Search results are filtered based on your role (admin, doctor, patient) and permissions.
+    - Click results to view details or take action.
 
 ## Access & Restrictions
 
@@ -81,3 +92,29 @@ OmniCare is a hospital appointment booking system built with CakePHP 5.x. It pro
 -   Bootstrap 5
 -   FontAwesome
 -   MySQL
+
+## New Features
+
+### Role-Based Search
+
+OmniCare now includes a robust, role-aware search system:
+
+- **Main Search Widget:**
+  - Located on key dashboard and content pages.
+  - Lets you search for patients, doctors, appointments, and departments.
+  - Results are filtered by your user role and permissions.
+
+- **Topbar Quick Search:**
+  - Always visible in the top navigation bar.
+  - AJAX-powered: see instant results in a dropdown as you type.
+  - Click a result to jump directly to the relevant record or page.
+
+### Reporting Templates
+
+- **Monthly Report:** View and print monthly appointment statistics.
+- **Daily Schedule Print:** Print a daily schedule for doctors or departments.
+- **Doctor Index:** Doctors can view and print their patient lists.
+
+All report templates are accessible from the Reports menu. Reports are printable and styled for clarity.
+
+---
