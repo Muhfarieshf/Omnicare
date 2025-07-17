@@ -65,6 +65,15 @@ OmniCare is a hospital appointment booking system built with CakePHP 5.x. It pro
 ## Usage
 
 -   **Login/Register:** Patients can register; Admins/Doctors are created by admin.
+
+### Demo Login Accounts
+
+| Role    | Username   | Password  |
+|---------|------------|-----------|
+| Admin   | admin      | password  |
+| Doctor  | dr_ahmad   | password  |
+| Patient | john_smith | password  |
+
 -   **Book Appointments:** Patients can book with available doctors.
 -   **Manage Data:** Admins manage users, doctors, departments, and appointments.
 -   **Dashboards:** Each role sees relevant stats and quick actions.
