@@ -46,6 +46,10 @@ class DepartmentsTable extends Table
         $this->hasMany('Doctors', [
             'foreignKey' => 'department_id',
         ]);
+        $this->hasMany('WaitingList', [
+            'foreignKey' => 'department_id',
+            'dependent' => false,
+        ]);
     }
 
     /**

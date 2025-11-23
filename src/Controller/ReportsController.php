@@ -123,8 +123,9 @@ class ReportsController extends AppController
 
         // Total unique patients
         $totalPatients = $appointmentsTable->find()
+            ->select(['patient_id'])
             ->where(['doctor_id' => $doctor->id])
-            ->distinct(['patient_id'])
+            ->group(['patient_id'])
             ->count();
 
         // Recent appointments for list

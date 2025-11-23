@@ -11,5 +11,6 @@ class Department extends Entity
         'created_at' => true,
         'updated_at' => true,
         'doctors' => true,
+        'waiting_list' => true,
     ];
 }

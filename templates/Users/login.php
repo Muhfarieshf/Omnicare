@@ -437,57 +437,11 @@ body::before {
                     ]) ?>
                 </p>
             </div>
-            
-            <!-- Quick login buttons for testing -->
-            <div class="quick-login-section">
-                <div class="quick-login-title">
-                    <i class="fas fa-bolt"></i>
-                    Quick Login (Demo)
-                </div>
-                <div class="quick-login-buttons">
-                    <button class="btn-quick quick-login" 
-                            data-username="admin" data-password="password">
-                        <i class="fas fa-user-shield"></i>
-                        <span>Admin</span>
-                    </button>
-                    <button class="btn-quick quick-login" 
-                            data-username="dr_ahmad" data-password="password">
-                        <i class="fas fa-user-md"></i>
-                        <span>Doctor</span>
-                    </button>
-                    <button class="btn-quick quick-login" 
-                            data-username="john_smith" data-password="password">
-                        <i class="fas fa-user"></i>
-                        <span>Patient</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+                       
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Quick login functionality
-    document.querySelectorAll('.quick-login').forEach(button => {
-        button.addEventListener('click', function() {
-            const username = this.dataset.username;
-            const password = this.dataset.password;
-            
-            document.querySelector('input[name="username"]').value = username;
-            document.querySelector('input[name="password"]').value = password;
-            
-            // Add visual feedback
-            this.style.background = 'rgba(0, 102, 204, 0.1)';
-            this.style.borderColor = '#0066cc';
-            
-            // Auto-submit after a brief delay
-            setTimeout(() => {
-                document.getElementById('loginForm').submit();
-            }, 300);
-        });
-    });
-
     // Login form optimization
     const loginForm = document.getElementById('loginForm');
     const loginBtn = document.getElementById('loginBtn');

@@ -4,6 +4,13 @@
  * @var iterable<\App\Model\Entity\Patient> $patients
  */
 $currentUser = $this->getRequest()->getAttribute('identity');
+
+// For doctors, we need to get their patients through appointments
+$doctorPatients = [];
+if ($currentUser && $currentUser->role === 'doctor') {
+    // Get doctor's patients through appointments
+    $doctorPatients = $this->get('doctorPatients', []);
+}
 ?>
 
 <style>
@@ -539,7 +546,11 @@ $currentUser = $this->getRequest()->getAttribute('identity');
     <div class="page-header">
         <h3 class="page-title">
             <i class="fas fa-users"></i>
-            <?= __('Patients') ?>
+            <?php if ($currentUser && $currentUser->role === 'doctor'): ?>
+                <?= __('My Patients') ?>
+            <?php else: ?>
+                <?= __('Patients') ?>
+            <?php endif; ?>
         </h3>
         <?php if ($currentUser && $currentUser->role !== 'doctor'): ?>
             <?= $this->Html->link(
@@ -585,7 +596,9 @@ $currentUser = $this->getRequest()->getAttribute('identity');
                 <i class="fas fa-users"></i>
                 <h5>No patients found</h5>
                 <p>
-                    <?php if ($currentUser && $currentUser->role !== 'doctor'): ?>
+                    <?php if ($currentUser && $currentUser->role === 'doctor'): ?>
+                        You don't have any patients with appointments yet. Patients will appear here once they have scheduled appointments with you.
+                    <?php elseif ($currentUser && $currentUser->role !== 'doctor'): ?>
                         Click "New Patient" to add the first patient record.
                     <?php else: ?>
                         No patient records are available at this time.

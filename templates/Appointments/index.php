@@ -234,6 +234,16 @@
     color: #f59e0b;
 }
 
+.status-badge.info {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.status-badge i {
+    font-size: 10px;
+    margin-right: 4px;
+}
+
 /* Action Buttons */
 .action-buttons {
     display: flex;
@@ -330,7 +340,7 @@
     font-size: 14px;
 }
 
-/* Filter Bar (if you want to add filters later) */
+/* Filter Bar */
 .filter-bar {
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(20px);
@@ -339,7 +349,88 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     padding: 20px 24px;
     margin-bottom: 24px;
-    display: none; /* Hidden by default, can be shown when needed */
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 150px;
+}
+
+.filter-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-group select,
+.filter-group input {
+    padding: 8px 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    background: white;
+    color: #1f1f1f;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.filter-toggle {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: #0066cc;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.filter-toggle:hover {
+    background: rgba(0, 102, 204, 0.1);
+}
+
+.filter-toggle i {
+    transition: transform 0.2s ease;
+}
+
+.filter-toggle.active i {
+    transform: rotate(180deg);
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.btn-info:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    color: white;
 }
 
 /* Responsive Design */
@@ -403,17 +494,103 @@
 }
 </style>
 
+<script>
+function toggleFilters() {
+    const filterBar = document.getElementById('filterBar');
+    const filterToggle = document.getElementById('filterToggle');
+    
+    if (filterBar.style.display === 'none') {
+        filterBar.style.display = 'flex';
+        filterToggle.classList.add('active');
+    } else {
+        filterBar.style.display = 'none';
+        filterToggle.classList.remove('active');
+    }
+}
+
+// Show filters if there are active filter parameters
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('status') || urlParams.has('date_from') || urlParams.has('date_to')) {
+        toggleFilters();
+    }
+});
+</script>
+
 <div class="appointments-container">
     <div class="page-header">
         <h3 class="page-title">
             <i class="fas fa-calendar-check"></i>
             Appointments
         </h3>
-        <?= $this->Html->link(
-            '<i class="fas fa-plus"></i> New Appointment', 
-            ['action' => 'add'], 
-            ['class' => 'btn btn-success', 'escape' => false]
-        ) ?>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <?= $this->Html->link(
+                '<i class="fas fa-calendar-day"></i> Dashboard', 
+                ['action' => 'dashboard'], 
+                ['class' => 'btn btn-outline-primary', 'escape' => false]
+            ) ?>
+            <?= $this->Html->link(
+                '<i class="fas fa-plus"></i> New Appointment', 
+                ['action' => 'add'], 
+                ['class' => 'btn btn-success', 'escape' => false]
+            ) ?>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar" id="filterBar" style="display: none;">
+        <?= $this->Form->create(null, ['type' => 'get', 'url' => ['action' => 'index']]) ?>
+        <div class="filter-group">
+            <label for="status">Status</label>
+            <?= $this->Form->select('status', [
+                '' => 'All Statuses',
+                'Scheduled' => 'Scheduled',
+                'Confirmed' => 'Confirmed',
+                'In Progress' => 'In Progress',
+                'Completed' => 'Completed',
+                'Cancelled' => 'Cancelled',
+                'No Show' => 'No Show',
+                'Pending Approval' => 'Pending Approval'
+            ], [
+                'value' => $this->request->getQuery('status'),
+                'class' => 'form-control',
+                'id' => 'status'
+            ]) ?>
+        </div>
+        <div class="filter-group">
+            <label for="date_from">Date From</label>
+            <?= $this->Form->date('date_from', [
+                'value' => $this->request->getQuery('date_from'),
+                'class' => 'form-control',
+                'id' => 'date_from'
+            ]) ?>
+        </div>
+        <div class="filter-group">
+            <label for="date_to">Date To</label>
+            <?= $this->Form->date('date_to', [
+                'value' => $this->request->getQuery('date_to'),
+                'class' => 'form-control',
+                'id' => 'date_to'
+            ]) ?>
+        </div>
+        <div class="filter-actions">
+            <?= $this->Form->button('<i class="fas fa-filter"></i> Filter', [
+                'class' => 'btn btn-primary',
+                'escape' => false
+            ]) ?>
+            <?= $this->Html->link('<i class="fas fa-times"></i> Clear', 
+                ['action' => 'index'], 
+                ['class' => 'btn btn-outline-secondary', 'escape' => false]
+            ) ?>
+        </div>
+        <?= $this->Form->end() ?>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+        <div class="filter-toggle" id="filterToggle" onclick="toggleFilters()">
+            <i class="fas fa-filter"></i>
+            <span>Filters</span>
+        </div>
     </div>
 
     <div class="table-container">
@@ -433,6 +610,7 @@
                             <th><?= $this->Paginator->sort('doctor_id', 'Doctor') ?></th>
                             <th><?= $this->Paginator->sort('appointment_date', 'Date') ?></th>
                             <th><?= $this->Paginator->sort('appointment_time', 'Time') ?></th>
+                            <th>Duration</th>
                             <th><?= $this->Paginator->sort('status', 'Status') ?></th>
                             <th>Actions</th>
                         </tr>
@@ -449,16 +627,60 @@
                             </td>
                             <td><?= h($appointment->appointment_date->format('M d, Y')) ?></td>
                             <td><?= h($appointment->appointment_time->format('H:i')) ?></td>
+                            <td><?= h($appointment->duration_minutes ?? 30) ?> min</td>
                             <td>
-                                <span class="status-badge <?= $appointment->status === 'Completed' ? 'success' : ($appointment->status === 'Cancelled' ? 'danger' : ($appointment->status === 'No Show' ? 'warning' : 'primary')) ?>">
+                                <?php
+                                $statusClass = 'primary';
+                                $statusIcon = 'fa-calendar';
+                                switch($appointment->status) {
+                                    case 'Confirmed':
+                                        $statusClass = 'info';
+                                        $statusIcon = 'fa-check-circle';
+                                        break;
+                                    case 'In Progress':
+                                        $statusClass = 'warning';
+                                        $statusIcon = 'fa-spinner';
+                                        break;
+                                    case 'Completed':
+                                        $statusClass = 'success';
+                                        $statusIcon = 'fa-check-circle';
+                                        break;
+                                    case 'Cancelled':
+                                        $statusClass = 'danger';
+                                        $statusIcon = 'fa-times-circle';
+                                        break;
+                                    case 'No Show':
+                                        $statusClass = 'warning';
+                                        $statusIcon = 'fa-exclamation-triangle';
+                                        break;
+                                    case 'Pending Approval':
+                                        $statusClass = 'warning';
+                                        $statusIcon = 'fa-clock';
+                                        break;
+                                    default:
+                                        $statusClass = 'primary';
+                                        $statusIcon = 'fa-calendar-check';
+                                }
+                                ?>
+                                <span class="status-badge <?= $statusClass ?>" title="<?= h($appointment->status) ?>">
+                                    <i class="fas <?= $statusIcon ?>"></i>
                                     <?= h($appointment->status) ?>
                                 </span>
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <?= $this->Html->link('<i class="fas fa-eye"></i>', ['action' => 'view', $appointment->id], ['class' => 'btn btn-sm btn-outline-primary', 'escape' => false]) ?>
-                                    <?= $this->Html->link('<i class="fas fa-edit"></i>', ['action' => 'edit', $appointment->id], ['class' => 'btn btn-sm btn-outline-secondary', 'escape' => false]) ?>
-                                    <?= $this->Form->postLink('<i class="fas fa-trash"></i>', ['action' => 'delete', $appointment->id], ['confirm' => __('Are you sure you want to delete this appointment?'), 'class' => 'btn btn-sm btn-outline-danger', 'escape' => false]) ?>
+                                    <?= $this->Html->link('<i class="fas fa-eye"></i>', ['action' => 'view', $appointment->id], ['class' => 'btn btn-sm btn-outline-primary', 'escape' => false, 'title' => 'View']) ?>
+                                    <?= $this->Html->link('<i class="fas fa-edit"></i>', ['action' => 'edit', $appointment->id], ['class' => 'btn btn-sm btn-outline-secondary', 'escape' => false, 'title' => 'Edit']) ?>
+                                    <?php if (in_array($appointment->status, ['Scheduled', 'Confirmed'])): ?>
+                                        <?= $this->Form->postLink('<i class="fas fa-check"></i>', ['action' => 'confirm', $appointment->id], ['class' => 'btn btn-sm btn-success', 'escape' => false, 'title' => 'Confirm', 'confirm' => __('Confirm this appointment?')]) ?>
+                                    <?php endif; ?>
+                                    <?php if ($appointment->status === 'Confirmed'): ?>
+                                        <?= $this->Form->postLink('<i class="fas fa-play"></i>', ['action' => 'start', $appointment->id], ['class' => 'btn btn-sm btn-info', 'escape' => false, 'title' => 'Start', 'confirm' => __('Start this appointment?')]) ?>
+                                    <?php endif; ?>
+                                    <?php if ($appointment->status === 'In Progress'): ?>
+                                        <?= $this->Form->postLink('<i class="fas fa-check-circle"></i>', ['action' => 'complete', $appointment->id], ['class' => 'btn btn-sm btn-success', 'escape' => false, 'title' => 'Complete', 'confirm' => __('Mark as completed?')]) ?>
+                                    <?php endif; ?>
+                                    <?= $this->Form->postLink('<i class="fas fa-trash"></i>', ['action' => 'delete', $appointment->id], ['confirm' => __('Are you sure you want to delete this appointment?'), 'class' => 'btn btn-sm btn-outline-danger', 'escape' => false, 'title' => 'Delete']) ?>
                                 </div>
                             </td>
                         </tr>

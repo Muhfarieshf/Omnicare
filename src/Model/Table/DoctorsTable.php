@@ -51,6 +51,15 @@ class DoctorsTable extends Table
         $this->hasMany('Appointments', [
             'foreignKey' => 'doctor_id',
         ]);
+        $this->hasMany('DoctorSchedules', [
+            'foreignKey' => 'doctor_id',
+            'dependent' => true,
+            'cascadeCallbacks' => true,
+        ]);
+        $this->hasMany('WaitingList', [
+            'foreignKey' => 'doctor_id',
+            'dependent' => false,
+        ]);
     }
 
     /**

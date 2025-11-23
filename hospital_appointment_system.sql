@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jul 01, 2025 at 05:32 AM
--- Server version: 8.0.30
--- PHP Version: 8.1.10
+-- Generation Time: Nov 09, 2025 at 08:05 AM
+-- Server version: 8.4.3
+-- PHP Version: 8.3.26
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -33,7 +33,17 @@ CREATE TABLE `appointments` (
   `doctor_id` int NOT NULL,
   `appointment_date` date NOT NULL,
   `appointment_time` time NOT NULL,
-  `status` varchar(20) DEFAULT 'Scheduled',
+  `duration_minutes` int NOT NULL DEFAULT '30' COMMENT 'Appointment duration in minutes (default: 30)',
+  `status` varchar(20) DEFAULT 'Scheduled' COMMENT 'Status: Scheduled, Confirmed, In Progress, Completed, Cancelled, No Show, Pending Approval',
+  `confirmed_at` datetime DEFAULT NULL COMMENT 'When appointment was confirmed',
+  `started_at` datetime DEFAULT NULL COMMENT 'When appointment started (In Progress)',
+  `completed_at` datetime DEFAULT NULL COMMENT 'When appointment was completed',
+  `cancelled_at` datetime DEFAULT NULL COMMENT 'When appointment was cancelled',
+  `cancelled_by` int DEFAULT NULL COMMENT 'User ID who cancelled the appointment',
+  `cancellation_reason` text COMMENT 'Reason for cancellation',
+  `requires_approval` tinyint(1) DEFAULT '0' COMMENT 'Whether cancellation requires approval',
+  `approved_by` int DEFAULT NULL COMMENT 'User ID who approved cancellation',
+  `approved_at` datetime DEFAULT NULL COMMENT 'When cancellation was approved',
   `remarks` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -43,21 +53,38 @@ CREATE TABLE `appointments` (
 -- Dumping data for table `appointments`
 --
 
-INSERT INTO `appointments` (`id`, `patient_id`, `doctor_id`, `appointment_date`, `appointment_time`, `status`, `remarks`, `created_at`, `updated_at`) VALUES
-(17, 2, 2, '2025-06-26', '10:30:00', 'Scheduled', 'Follow-up for headaches', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
-(18, 3, 3, '2025-06-26', '14:00:00', 'Completed', 'Knee pain consultation', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
-(19, 4, 4, '2025-06-26', '15:30:00', 'Scheduled', 'Child wellness check', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
-(20, 5, 1, '2025-06-26', '16:00:00', 'Scheduled', 'Heart murmur follow-up', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
-(21, 6, 2, '2025-06-27', '09:00:00', 'Scheduled', 'Neurological examination', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
-(22, 7, 3, '2025-06-27', '11:00:00', 'Scheduled', 'Back pain evaluation', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
-(23, 8, 4, '2025-06-27', '14:30:00', 'Scheduled', 'Vaccination appointment', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
-(25, 2, 1, '2025-06-29', '10:00:00', 'Scheduled', 'Cardiac follow-up', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
-(26, 3, 2, '2025-06-30', '13:00:00', 'Scheduled', 'Migraine treatment', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
-(27, 4, 3, '2025-07-01', '15:00:00', 'Scheduled', 'Physical therapy session', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
-(28, 5, 4, '2025-07-02', '11:30:00', 'Scheduled', 'Pediatric checkup', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
-(30, 2, 1, '2025-06-12', '14:00:00', 'Completed', 'Cardiac screening', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
-(31, 3, 3, '2025-06-05', '11:30:00', 'Completed', 'Injury assessment', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
-(32, 4, 4, '2025-05-26', '16:00:00', 'Completed', 'Regular checkup', '2025-06-26 11:22:43', '2025-06-26 11:22:43');
+INSERT INTO `appointments` (`id`, `patient_id`, `doctor_id`, `appointment_date`, `appointment_time`, `duration_minutes`, `status`, `confirmed_at`, `started_at`, `completed_at`, `cancelled_at`, `cancelled_by`, `cancellation_reason`, `requires_approval`, `approved_by`, `approved_at`, `remarks`, `created_at`, `updated_at`) VALUES
+(17, 2, 2, '2025-06-26', '10:30:00', 30, 'Scheduled', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 'Follow-up for headaches', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
+(18, 3, 3, '2025-06-26', '14:00:00', 30, 'Completed', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 'Knee pain consultation', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
+(19, 4, 4, '2025-06-26', '15:30:00', 30, 'Scheduled', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 'Child wellness check', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
+(20, 5, 1, '2025-06-26', '16:00:00', 30, 'Scheduled', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 'Heart murmur follow-up', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
+(21, 6, 2, '2025-06-27', '09:00:00', 30, 'Scheduled', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 'Neurological examination', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
+(22, 7, 3, '2025-06-27', '11:00:00', 30, 'Scheduled', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 'Back pain evaluation', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
+(23, 8, 4, '2025-06-27', '14:30:00', 30, 'Scheduled', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 'Vaccination appointment', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
+(25, 2, 1, '2025-06-29', '10:00:00', 30, 'Scheduled', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 'Cardiac follow-up', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
+(26, 3, 2, '2025-06-30', '13:00:00', 30, 'Scheduled', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 'Migraine treatment', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
+(27, 4, 3, '2025-07-01', '15:00:00', 30, 'Scheduled', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 'Physical therapy session', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
+(28, 5, 4, '2025-07-02', '11:30:00', 30, 'Scheduled', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 'Pediatric checkup', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
+(30, 2, 1, '2025-06-12', '14:00:00', 30, 'Completed', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 'Cardiac screening', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
+(31, 3, 3, '2025-06-05', '11:30:00', 30, 'Completed', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 'Injury assessment', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
+(32, 4, 4, '2025-05-26', '16:00:00', 30, 'Completed', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 'Regular checkup', '2025-06-26 11:22:43', '2025-06-26 11:22:43');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `appointment_status_history`
+--
+
+CREATE TABLE `appointment_status_history` (
+  `id` int NOT NULL,
+  `appointment_id` int NOT NULL,
+  `old_status` varchar(20) DEFAULT NULL COMMENT 'Previous status',
+  `new_status` varchar(20) NOT NULL COMMENT 'New status',
+  `changed_by` int NOT NULL COMMENT 'User ID who made the change',
+  `changed_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `notes` text COMMENT 'Additional notes about the status change',
+  `ip_address` varchar(45) DEFAULT NULL COMMENT 'IP address of user who made the change'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Audit trail for appointment status changes';
 
 -- --------------------------------------------------------
 
@@ -107,7 +134,7 @@ CREATE TABLE `doctors` (
 --
 
 INSERT INTO `doctors` (`id`, `name`, `department_id`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Dr. Ahmad Hassan', 1, 'active', NULL, '2025-06-30 00:46:55'),
+(1, 'Dr. Ahmad Hassan', 1, 'active', '2025-06-25 23:29:10', '2025-10-21 12:18:56'),
 (2, 'Dr. Lisa Wong', 2, 'active', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
 (3, 'Dr. Raj Patel', 3, 'active', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
 (4, 'Dr. Maria Santos', 4, 'active', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
@@ -116,8 +143,25 @@ INSERT INTO `doctors` (`id`, `name`, `department_id`, `status`, `created_at`, `u
 (7, 'Dr. Michael Chen', 1, 'active', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
 (8, 'Dr. Emily Rodriguez', 4, 'active', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
 (9, 'Dr. James Thompson', 3, 'active', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
-(10, 'Dr. Anna Kowalski', 2, 'active', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
-(11, 'test', 2, 'active', '2025-06-29 05:08:51', '2025-06-29 05:08:51');
+(10, 'Dr. Anna Kowalski', 2, 'active', '2025-06-26 11:22:43', '2025-06-26 11:22:43');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `doctor_schedules`
+--
+
+CREATE TABLE `doctor_schedules` (
+  `id` int NOT NULL,
+  `doctor_id` int NOT NULL,
+  `day_of_week` tinyint NOT NULL COMMENT '0=Sunday, 1=Monday, ..., 6=Saturday',
+  `start_time` time NOT NULL COMMENT 'Start time of availability',
+  `end_time` time NOT NULL COMMENT 'End time of availability',
+  `is_available` tinyint(1) DEFAULT '1' COMMENT 'Whether doctor is available on this schedule',
+  `notes` text COMMENT 'Additional notes about this schedule',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Doctor availability schedules (weekly recurring)';
 
 -- --------------------------------------------------------
 
@@ -200,6 +244,30 @@ INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `patient_id`
 (21, 'lisa_anderson', 'lisa.anderson@email.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'patient', 8, NULL, 'active', '2025-06-26 11:22:43', '2025-06-26 11:22:43'),
 (41, 'Ali', NULL, '$2y$10$ebO9QWHFqWfGH41/YDW1vuLNJqIj/i95033dUrNnJkOnHbXgv6duS', 'patient', 39, NULL, 'active', '2025-07-01 05:21:36', '2025-07-01 05:21:36');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `waiting_list`
+--
+
+CREATE TABLE `waiting_list` (
+  `id` int NOT NULL,
+  `patient_id` int NOT NULL,
+  `doctor_id` int DEFAULT NULL COMMENT 'Specific doctor preference (nullable)',
+  `department_id` int DEFAULT NULL COMMENT 'Department preference (nullable)',
+  `preferred_date` date DEFAULT NULL COMMENT 'Preferred appointment date',
+  `preferred_time` time DEFAULT NULL COMMENT 'Preferred appointment time',
+  `duration_minutes` int NOT NULL DEFAULT '30' COMMENT 'Requested appointment duration',
+  `priority` int NOT NULL DEFAULT '5' COMMENT 'Priority: 1=highest, 10=lowest',
+  `status` varchar(20) DEFAULT 'pending' COMMENT 'pending, notified, fulfilled, cancelled',
+  `notes` text COMMENT 'Additional notes or requirements',
+  `notified_at` datetime DEFAULT NULL COMMENT 'When patient was notified of availability',
+  `fulfilled_at` datetime DEFAULT NULL COMMENT 'When waiting list entry was fulfilled',
+  `fulfilled_appointment_id` int DEFAULT NULL COMMENT 'Appointment ID that fulfilled this request',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Waiting list for appointments (queue management)';
+
 --
 -- Indexes for dumped tables
 --
@@ -212,7 +280,23 @@ ALTER TABLE `appointments`
   ADD KEY `appointments_ibfk_2` (`doctor_id`),
   ADD KEY `idx_appointment_status_search` (`status`),
   ADD KEY `idx_appointment_date_search` (`appointment_date`),
-  ADD KEY `idx_appointment_full_search` (`patient_id`,`doctor_id`,`status`,`appointment_date`);
+  ADD KEY `idx_appointment_full_search` (`patient_id`,`doctor_id`,`status`,`appointment_date`),
+  ADD KEY `fk_appointments_cancelled_by` (`cancelled_by`),
+  ADD KEY `fk_appointments_approved_by` (`approved_by`),
+  ADD KEY `idx_doctor_datetime_status` (`doctor_id`,`appointment_date`,`appointment_time`,`status`),
+  ADD KEY `idx_patient_datetime_status` (`patient_id`,`appointment_date`,`appointment_time`,`status`),
+  ADD KEY `idx_status_workflow` (`status`,`appointment_date`,`appointment_time`),
+  ADD KEY `idx_conflict_detection` (`doctor_id`,`appointment_date`,`appointment_time`,`duration_minutes`,`status`);
+
+--
+-- Indexes for table `appointment_status_history`
+--
+ALTER TABLE `appointment_status_history`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_appointment_id` (`appointment_id`),
+  ADD KEY `idx_changed_by` (`changed_by`),
+  ADD KEY `idx_changed_at` (`changed_at`),
+  ADD KEY `idx_status_change` (`old_status`,`new_status`);
 
 --
 -- Indexes for table `departments`
@@ -228,6 +312,14 @@ ALTER TABLE `doctors`
   ADD PRIMARY KEY (`id`),
   ADD KEY `department_id` (`department_id`),
   ADD KEY `idx_doctor_name_search` (`name`);
+
+--
+-- Indexes for table `doctor_schedules`
+--
+ALTER TABLE `doctor_schedules`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_doctor_day` (`doctor_id`,`day_of_week`),
+  ADD KEY `idx_doctor_available` (`doctor_id`,`is_available`);
 
 --
 -- Indexes for table `patients`
@@ -254,6 +346,18 @@ ALTER TABLE `users`
   ADD KEY `idx_user_email_search` (`email`);
 
 --
+-- Indexes for table `waiting_list`
+--
+ALTER TABLE `waiting_list`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_patient_status` (`patient_id`,`status`),
+  ADD KEY `idx_doctor_status` (`doctor_id`,`status`),
+  ADD KEY `idx_department_status` (`department_id`,`status`),
+  ADD KEY `idx_priority_status` (`priority`,`status`,`created_at`),
+  ADD KEY `idx_preferred_date` (`preferred_date`,`status`),
+  ADD KEY `fk_waiting_list_appointment` (`fulfilled_appointment_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -262,6 +366,12 @@ ALTER TABLE `users`
 --
 ALTER TABLE `appointments`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+
+--
+-- AUTO_INCREMENT for table `appointment_status_history`
+--
+ALTER TABLE `appointment_status_history`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `departments`
@@ -276,6 +386,12 @@ ALTER TABLE `doctors`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
+-- AUTO_INCREMENT for table `doctor_schedules`
+--
+ALTER TABLE `doctor_schedules`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `patients`
 --
 ALTER TABLE `patients`
@@ -288,6 +404,12 @@ ALTER TABLE `users`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
+-- AUTO_INCREMENT for table `waiting_list`
+--
+ALTER TABLE `waiting_list`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
 -- Constraints for dumped tables
 --
 
@@ -296,7 +418,16 @@ ALTER TABLE `users`
 --
 ALTER TABLE `appointments`
   ADD CONSTRAINT `appointments_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+  ADD CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_appointments_approved_by` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_appointments_cancelled_by` FOREIGN KEY (`cancelled_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `appointment_status_history`
+--
+ALTER TABLE `appointment_status_history`
+  ADD CONSTRAINT `fk_status_history_appointment` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_status_history_user` FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 --
 -- Constraints for table `doctors`
@@ -305,11 +436,26 @@ ALTER TABLE `doctors`
   ADD CONSTRAINT `doctors_ibfk_1` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Constraints for table `doctor_schedules`
+--
+ALTER TABLE `doctor_schedules`
+  ADD CONSTRAINT `fk_doctor_schedules_doctor` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Constraints for table `users`
 --
 ALTER TABLE `users`
   ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `users_ibfk_2` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `waiting_list`
+--
+ALTER TABLE `waiting_list`
+  ADD CONSTRAINT `fk_waiting_list_appointment` FOREIGN KEY (`fulfilled_appointment_id`) REFERENCES `appointments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_waiting_list_department` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_waiting_list_doctor` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_waiting_list_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

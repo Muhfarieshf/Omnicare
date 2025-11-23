@@ -683,7 +683,7 @@ body::before {
                                     <span class="id-badge">#<?= h($doctor->id) ?></span>
                                 </td>
                                 <td data-label="Name">
-                                    <strong>Dr. <?= h($doctor->name) ?></strong>
+                                    <strong><?= h($doctor->name) ?></strong>
                                 </td>
                                 <td data-label="Status">
                                     <span class="status-badge status-<?= h($doctor->status) === 'active' ? 'active' : 'inactive' ?>">
@@ -692,10 +692,14 @@ body::before {
                                     </span>
                                 </td>
                                 <td data-label="Created">
-                                    <span class="datetime-value"><?= h($doctor->created_at->format('M d, Y')) ?></span>
+                                    <span class="datetime-value">
+                                        <?= $doctor->created_at ? h($doctor->created_at->format('M d, Y')) : 'N/A' ?>
+                                    </span>
                                 </td>
                                 <td data-label="Updated">
-                                    <span class="datetime-value"><?= h($doctor->updated_at->format('M d, Y')) ?></span>
+                                    <span class="datetime-value">
+                                        <?= $doctor->updated_at ? h($doctor->updated_at->format('M d, Y')) : 'N/A' ?>
+                                    </span>
                                 </td>
                                 <td data-label="Actions">
                                     <div class="doctor-actions">

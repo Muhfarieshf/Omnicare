@@ -391,6 +391,26 @@
     color: #f59e0b;
 }
 
+.appointment-status.confirmed {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.appointment-status.in-progress {
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+}
+
+.appointment-status.pending-approval {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.appointment-status i {
+    font-size: 10px;
+    margin-right: 4px;
+}
+
 /* Action Buttons in Table */
 .table-action-buttons {
     display: flex;
@@ -601,6 +621,7 @@
                                 <th>Date</th>
                                 <th>Time</th>
                                 <th>Status</th>
+                                <th>Duration</th>
                                 <th>Remarks</th>
                                 <th>Created</th>
                                 <th>Updated</th>
@@ -624,10 +645,46 @@
                                 <td><?= h($appointment->appointment_date ? $appointment->appointment_date->format('M d, Y') : 'N/A') ?></td>
                                 <td><?= h($appointment->appointment_time ? $appointment->appointment_time->format('g:i A') : 'N/A') ?></td>
                                 <td>
-                                    <span class="appointment-status <?= strtolower(str_replace(' ', '-', $appointment->status ?? 'scheduled')) ?>">
-                                        <?= h($appointment->status ?? 'Scheduled') ?>
+                                    <?php
+                                    $status = $appointment->status ?? 'Scheduled';
+                                    $statusClass = 'scheduled';
+                                    $statusIcon = 'fa-calendar-check';
+                                    switch($status) {
+                                        case 'Confirmed':
+                                            $statusClass = 'confirmed';
+                                            $statusIcon = 'fa-check-circle';
+                                            break;
+                                        case 'In Progress':
+                                            $statusClass = 'in-progress';
+                                            $statusIcon = 'fa-spinner';
+                                            break;
+                                        case 'Completed':
+                                            $statusClass = 'completed';
+                                            $statusIcon = 'fa-check-circle';
+                                            break;
+                                        case 'Cancelled':
+                                            $statusClass = 'cancelled';
+                                            $statusIcon = 'fa-times-circle';
+                                            break;
+                                        case 'No Show':
+                                            $statusClass = 'no-show';
+                                            $statusIcon = 'fa-exclamation-triangle';
+                                            break;
+                                        case 'Pending Approval':
+                                            $statusClass = 'pending-approval';
+                                            $statusIcon = 'fa-clock';
+                                            break;
+                                        default:
+                                            $statusClass = 'scheduled';
+                                            $statusIcon = 'fa-calendar-check';
+                                    }
+                                    ?>
+                                    <span class="appointment-status <?= $statusClass ?>">
+                                        <i class="fas <?= $statusIcon ?>"></i>
+                                        <?= h($status) ?>
                                     </span>
                                 </td>
+                                <td><?= h($appointment->duration_minutes ?? 30) ?> min</td>
                                 <td><?= h($appointment->remarks ?: '-') ?></td>
                                 <td><?= h($appointment->created_at ? $appointment->created_at->format('M d, Y') : 'N/A') ?></td>
                                 <td><?= h($appointment->updated_at ? $appointment->updated_at->format('M d, Y') : 'N/A') ?></td>

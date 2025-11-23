@@ -46,6 +46,10 @@ class PatientsTable extends Table
         $this->hasMany('Appointments', [
             'foreignKey' => 'patient_id',
         ]);
+        $this->hasMany('WaitingList', [
+            'foreignKey' => 'patient_id',
+            'dependent' => false,
+        ]);
     }
 
     /**

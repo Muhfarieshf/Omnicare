@@ -24,6 +24,23 @@ class UsersTable extends Table
             'foreignKey' => 'doctor_id', 
             'joinType' => 'LEFT',
         ]);
+        
+        $this->hasMany('CancelledAppointments', [
+            'className' => 'Appointments',
+            'foreignKey' => 'cancelled_by',
+            'dependent' => false,
+        ]);
+        
+        $this->hasMany('ApprovedAppointments', [
+            'className' => 'Appointments',
+            'foreignKey' => 'approved_by',
+            'dependent' => false,
+        ]);
+        
+        $this->hasMany('AppointmentStatusHistory', [
+            'foreignKey' => 'changed_by',
+            'dependent' => false,
+        ]);
     }
 
     public function validationDefault(Validator $validator): Validator

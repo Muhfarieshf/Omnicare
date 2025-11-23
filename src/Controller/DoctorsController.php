@@ -221,8 +221,9 @@ class DoctorsController extends AppController
 
             // Get statistics
             $totalPatients = $this->Doctors->Appointments->find()
+                ->select(['patient_id'])
                 ->where(['doctor_id' => $doctor->id])
-                ->distinct(['patient_id'])
+                ->group(['patient_id'])
                 ->count();
             
             $todaysCount = count($todaysAppointments);

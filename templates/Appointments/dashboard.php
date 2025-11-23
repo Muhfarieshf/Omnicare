@@ -289,6 +289,21 @@ body::before {
     color: #f59e0b;
 }
 
+.badge-info {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.badge-warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.status-badge i {
+    font-size: 10px;
+    margin-right: 4px;
+}
+
 /* Empty State */
 .empty-state {
     text-align: center;
@@ -480,7 +495,9 @@ body::before {
                                     <th>Time</th>
                                     <th>Patient</th>
                                     <th>Doctor</th>
+                                    <th>Duration</th>
                                     <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -489,26 +506,52 @@ body::before {
                                     <td class="time-cell"><?= h($appointment->appointment_time->format('H:i')) ?></td>
                                     <td><?= h($appointment->patient->name) ?></td>
                                     <td><?= h($appointment->doctor->name) ?></td>
+                                    <td><?= h($appointment->duration_minutes ?? 30) ?> min</td>
                                     <td>
                                         <?php
                                         $badgeClass = 'badge-scheduled';
-                                        switch (strtolower($appointment->status)) {
-                                            case 'completed':
+                                        $statusIcon = 'fa-calendar-check';
+                                        switch ($appointment->status) {
+                                            case 'Confirmed':
+                                                $badgeClass = 'badge-info';
+                                                $statusIcon = 'fa-check-circle';
+                                                break;
+                                            case 'In Progress':
+                                                $badgeClass = 'badge-warning';
+                                                $statusIcon = 'fa-spinner';
+                                                break;
+                                            case 'Completed':
                                                 $badgeClass = 'badge-completed';
+                                                $statusIcon = 'fa-check-circle';
                                                 break;
-                                            case 'cancelled':
+                                            case 'Cancelled':
                                                 $badgeClass = 'badge-cancelled';
+                                                $statusIcon = 'fa-times-circle';
                                                 break;
-                                            case 'pending':
+                                            case 'No Show':
+                                                $badgeClass = 'badge-warning';
+                                                $statusIcon = 'fa-exclamation-triangle';
+                                                break;
+                                            case 'Pending Approval':
                                                 $badgeClass = 'badge-pending';
+                                                $statusIcon = 'fa-clock';
                                                 break;
                                             default:
                                                 $badgeClass = 'badge-scheduled';
+                                                $statusIcon = 'fa-calendar-check';
                                         }
                                         ?>
                                         <span class="status-badge <?= $badgeClass ?>">
+                                            <i class="fas <?= $statusIcon ?>"></i>
                                             <?= h($appointment->status) ?>
                                         </span>
+                                    </td>
+                                    <td>
+                                        <?= $this->Html->link(
+                                            '<i class="fas fa-eye"></i> View',
+                                            ['action' => 'view', $appointment->id],
+                                            ['class' => 'btn btn-sm btn-outline-primary', 'escape' => false]
+                                        ) ?>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -542,6 +585,9 @@ body::before {
                                     <th>Time</th>
                                     <th>Patient</th>
                                     <th>Doctor</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -551,6 +597,53 @@ body::before {
                                     <td class="time-cell"><?= h($appointment->appointment_time->format('H:i')) ?></td>
                                     <td><?= h($appointment->patient->name) ?></td>
                                     <td><?= h($appointment->doctor->name) ?></td>
+                                    <td><?= h($appointment->duration_minutes ?? 30) ?> min</td>
+                                    <td>
+                                        <?php
+                                        $badgeClass = 'badge-scheduled';
+                                        $statusIcon = 'fa-calendar-check';
+                                        switch ($appointment->status) {
+                                            case 'Confirmed':
+                                                $badgeClass = 'badge-info';
+                                                $statusIcon = 'fa-check-circle';
+                                                break;
+                                            case 'In Progress':
+                                                $badgeClass = 'badge-warning';
+                                                $statusIcon = 'fa-spinner';
+                                                break;
+                                            case 'Completed':
+                                                $badgeClass = 'badge-completed';
+                                                $statusIcon = 'fa-check-circle';
+                                                break;
+                                            case 'Cancelled':
+                                                $badgeClass = 'badge-cancelled';
+                                                $statusIcon = 'fa-times-circle';
+                                                break;
+                                            case 'No Show':
+                                                $badgeClass = 'badge-warning';
+                                                $statusIcon = 'fa-exclamation-triangle';
+                                                break;
+                                            case 'Pending Approval':
+                                                $badgeClass = 'badge-pending';
+                                                $statusIcon = 'fa-clock';
+                                                break;
+                                            default:
+                                                $badgeClass = 'badge-scheduled';
+                                                $statusIcon = 'fa-calendar-check';
+                                        }
+                                        ?>
+                                        <span class="status-badge <?= $badgeClass ?>">
+                                            <i class="fas <?= $statusIcon ?>"></i>
+                                            <?= h($appointment->status) ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <?= $this->Html->link(
+                                            '<i class="fas fa-eye"></i> View',
+                                            ['action' => 'view', $appointment->id],
+                                            ['class' => 'btn btn-sm btn-outline-primary', 'escape' => false]
+                                        ) ?>
+                                    </td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>

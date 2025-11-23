@@ -216,6 +216,21 @@ body::before {
     color: #0066cc;
 }
 
+.status-confirmed {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.status-in-progress {
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+}
+
+.status-pending-approval {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
 /* Links in table */
 .patient-link,
 .doctor-link {
@@ -437,6 +452,168 @@ body::before {
     }
 }
 
+/* Status History Timeline */
+.status-history-timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.status-history-timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.history-item {
+    position: relative;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+}
+
+.history-item:last-child {
+    margin-bottom: 0;
+}
+
+.history-icon {
+    position: absolute;
+    left: -22px;
+    top: 4px;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border: 2px solid #0066cc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.history-icon i {
+    font-size: 6px;
+    color: #0066cc;
+}
+
+.history-content {
+    flex: 1;
+}
+
+.history-status {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.history-change {
+    font-size: 12px;
+    color: #666;
+}
+
+.history-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.history-user {
+    font-weight: 500;
+    color: #0066cc;
+}
+
+.history-notes {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(248, 249, 250, 0.8);
+    border-radius: 6px;
+    font-size: 13px;
+    color: #666;
+    border-left: 3px solid #0066cc;
+}
+
+/* Cancel/Reject Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: white;
+    margin: 10% auto;
+    padding: 0;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    padding: 24px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f1f1f;
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #1f1f1f;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.modal-footer .btn {
+    width: auto;
+    margin-bottom: 0;
+}
+
 /* Print Styles */
 @media print {
     body::before {
@@ -453,6 +630,10 @@ body::before {
     
     .actions-card {
         display: none;
+    }
+    
+    .modal {
+        display: none !important;
     }
 }
 </style>
@@ -529,6 +710,12 @@ body::before {
                         </td>
                     </tr>
                     <tr>
+                        <th><i class="fas fa-hourglass-half"></i> Duration:</th>
+                        <td>
+                            <span class="datetime-value"><?= h($appointment->duration_minutes ?? 30) ?> minutes</span>
+                        </td>
+                    </tr>
+                    <tr>
                         <th><i class="fas fa-flag"></i> Status:</th>
                         <td>
                             <?php
@@ -536,6 +723,14 @@ body::before {
                             $statusIcon = 'fas fa-calendar';
                             
                             switch ($appointment->status) {
+                                case 'Confirmed':
+                                    $statusClass = 'status-confirmed';
+                                    $statusIcon = 'fas fa-check-circle';
+                                    break;
+                                case 'In Progress':
+                                    $statusClass = 'status-in-progress';
+                                    $statusIcon = 'fas fa-spinner';
+                                    break;
                                 case 'Completed':
                                     $statusClass = 'status-completed';
                                     $statusIcon = 'fas fa-check-circle';
@@ -548,6 +743,10 @@ body::before {
                                     $statusClass = 'status-no-show';
                                     $statusIcon = 'fas fa-exclamation-triangle';
                                     break;
+                                case 'Pending Approval':
+                                    $statusClass = 'status-pending-approval';
+                                    $statusIcon = 'fas fa-clock';
+                                    break;
                                 default:
                                     $statusClass = 'status-scheduled';
                                     $statusIcon = 'fas fa-calendar-check';
@@ -559,6 +758,29 @@ body::before {
                             </span>
                         </td>
                     </tr>
+                    <?php if ($appointment->has('cancelledByUser') && $appointment->cancelledByUser): ?>
+                    <tr>
+                        <th><i class="fas fa-user-times"></i> Cancelled By:</th>
+                        <td>
+                            <span class="datetime-value"><?= h($appointment->cancelledByUser->username) ?></span>
+                            <?php if ($appointment->cancelled_at): ?>
+                                <span class="datetime-value" style="color: #666; margin-left: 8px;">
+                                    on <?= h($appointment->cancelled_at->format('M d, Y H:i A')) ?>
+                                </span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endif; ?>
+                    <?php if (!empty($appointment->cancellation_reason)): ?>
+                    <tr>
+                        <th><i class="fas fa-comment-alt"></i> Cancellation Reason:</th>
+                        <td>
+                            <div class="remarks-content" style="background: rgba(225, 29, 72, 0.05); border-left-color: #e11d48;">
+                                <?= h($appointment->cancellation_reason) ?>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php endif; ?>
                     <tr>
                         <th><i class="fas fa-sticky-note"></i> Remarks:</th>
                         <td>
@@ -587,7 +809,7 @@ body::before {
             </div>
         </div>
 
-        <!-- Quick Actions -->
+        <!-- Status Workflow Actions -->
         <div class="actions-card">
             <div class="card-header">
                 <h5 class="card-title">
@@ -596,17 +818,89 @@ body::before {
                 </h5>
             </div>
             <div class="card-body">
+                <!-- Status Workflow Buttons -->
+                <?php if (isset($allowedTransitions) && !empty($allowedTransitions)): ?>
+                    <div class="workflow-actions" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(0,0,0,0.1);">
+                        <h6 style="margin-bottom: 12px; font-size: 14px; font-weight: 600; color: #1f1f1f;">
+                            <i class="fas fa-sync-alt"></i> Status Actions
+                        </h6>
+                        <?php if (in_array('Confirmed', $allowedTransitions)): ?>
+                            <?= $this->Form->postLink(
+                                '<i class="fas fa-check"></i> Confirm',
+                                ['action' => 'confirm', $appointment->id],
+                                [
+                                    'class' => 'btn btn-primary',
+                                    'style' => 'margin-bottom: 8px;',
+                                    'escape' => false,
+                                    'confirm' => __('Are you sure you want to confirm this appointment?')
+                                ]
+                            ) ?>
+                        <?php endif; ?>
+                        
+                        <?php if (in_array('In Progress', $allowedTransitions)): ?>
+                            <?= $this->Form->postLink(
+                                '<i class="fas fa-play"></i> Start',
+                                ['action' => 'start', $appointment->id],
+                                [
+                                    'class' => 'btn btn-primary',
+                                    'style' => 'margin-bottom: 8px;',
+                                    'escape' => false,
+                                    'confirm' => __('Are you sure you want to start this appointment?')
+                                ]
+                            ) ?>
+                        <?php endif; ?>
+                        
+                        <?php if (in_array('Completed', $allowedTransitions)): ?>
+                            <?= $this->Form->postLink(
+                                '<i class="fas fa-check-circle"></i> Complete',
+                                ['action' => 'complete', $appointment->id],
+                                [
+                                    'class' => 'btn btn-primary',
+                                    'style' => 'margin-bottom: 8px;',
+                                    'escape' => false,
+                                    'confirm' => __('Are you sure you want to mark this appointment as completed?')
+                                ]
+                            ) ?>
+                        <?php endif; ?>
+                        
+                        <?php if (in_array('Pending Approval', $allowedTransitions) || in_array('Cancelled', $allowedTransitions)): ?>
+                            <button type="button" class="btn btn-danger" style="margin-bottom: 8px;" onclick="showCancelModal()">
+                                <i class="fas fa-times"></i> Request Cancellation
+                            </button>
+                        <?php endif; ?>
+                        
+                        <?php if ($appointment->status === 'Pending Approval'): ?>
+                            <?php if (isset($currentUser) && in_array($currentUser->role, ['admin', 'doctor'])): ?>
+                                <?= $this->Form->postLink(
+                                    '<i class="fas fa-check"></i> Approve Cancellation',
+                                    ['action' => 'approveCancellation', $appointment->id],
+                                    [
+                                        'class' => 'btn btn-primary',
+                                        'style' => 'margin-bottom: 8px;',
+                                        'escape' => false,
+                                        'confirm' => __('Are you sure you want to approve this cancellation request?')
+                                    ]
+                                ) ?>
+                                <button type="button" class="btn btn-secondary" style="margin-bottom: 8px;" onclick="showRejectModal()">
+                                    <i class="fas fa-times"></i> Reject Cancellation
+                                </button>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+                
+                <!-- Standard Actions -->
                 <?= $this->Html->link(
                     '<i class="fas fa-edit"></i> Edit Appointment',
                     ['action' => 'edit', $appointment->id],
-                    ['class' => 'btn btn-primary', 'escape' => false]
+                    ['class' => 'btn btn-primary', 'escape' => false, 'style' => 'margin-bottom: 8px;']
                 ) ?>
                 
                 <?php if ($appointment->has('patient')): ?>
                 <?= $this->Html->link(
                     '<i class="fas fa-user"></i> View Patient',
                     ['controller' => 'Patients', 'action' => 'view', $appointment->patient->id],
-                    ['class' => 'btn btn-outline', 'escape' => false]
+                    ['class' => 'btn btn-outline', 'escape' => false, 'style' => 'margin-bottom: 8px;']
                 ) ?>
                 <?php endif; ?>
                 
@@ -614,14 +908,14 @@ body::before {
                 <?= $this->Html->link(
                     '<i class="fas fa-user-md"></i> View Doctor',
                     ['controller' => 'Doctors', 'action' => 'view', $appointment->doctor->id],
-                    ['class' => 'btn btn-outline', 'escape' => false]
+                    ['class' => 'btn btn-outline', 'escape' => false, 'style' => 'margin-bottom: 8px;']
                 ) ?>
                 <?php endif; ?>
                 
                 <?= $this->Html->link(
                     '<i class="fas fa-list"></i> All Appointments',
                     ['action' => 'index'],
-                    ['class' => 'btn btn-outline', 'escape' => false]
+                    ['class' => 'btn btn-outline', 'escape' => false, 'style' => 'margin-bottom: 8px;']
                 ) ?>
                 
                 <?= $this->Form->postLink(
@@ -634,6 +928,139 @@ body::before {
                     ]
                 ) ?>
             </div>
+        </div>
+    </div>
+
+    <!-- Status History Card -->
+    <?php if (isset($statusHistory) && !empty($statusHistory)): ?>
+    <div class="info-card" style="margin-top: 32px;">
+        <div class="card-header">
+            <h5 class="card-title">
+                <i class="fas fa-history"></i>
+                Status History
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="status-history-timeline">
+                <?php foreach ($statusHistory as $history): ?>
+                    <div class="history-item">
+                        <div class="history-icon">
+                            <i class="fas fa-circle"></i>
+                        </div>
+                        <div class="history-content">
+                            <div class="history-status">
+                                <?php
+                                $historyStatusClass = 'status-scheduled';
+                                switch($history->new_status) {
+                                    case 'Confirmed':
+                                        $historyStatusClass = 'status-confirmed';
+                                        break;
+                                    case 'In Progress':
+                                        $historyStatusClass = 'status-in-progress';
+                                        break;
+                                    case 'Completed':
+                                        $historyStatusClass = 'status-completed';
+                                        break;
+                                    case 'Cancelled':
+                                        $historyStatusClass = 'status-cancelled';
+                                        break;
+                                    case 'No Show':
+                                        $historyStatusClass = 'status-no-show';
+                                        break;
+                                    case 'Pending Approval':
+                                        $historyStatusClass = 'status-pending-approval';
+                                        break;
+                                }
+                                ?>
+                                <span class="status-badge <?= $historyStatusClass ?>">
+                                    <?= h($history->new_status) ?>
+                                </span>
+                                <?php if ($history->old_status): ?>
+                                    <span class="history-change">
+                                        from <?= h($history->old_status) ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="history-meta">
+                                <span class="history-user">
+                                    <?= h($history->changedByUser->username ?? 'System') ?>
+                                </span>
+                                <span class="history-date">
+                                    <?= h($history->changed_at->format('M d, Y H:i A')) ?>
+                                </span>
+                            </div>
+                            <?php if (!empty($history->notes)): ?>
+                                <div class="history-notes">
+                                    <?= h($history->notes) ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+</div>
+
+<!-- Cancel Modal -->
+<div id="cancelModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Request Cancellation</h5>
+            <button class="modal-close" onclick="closeCancelModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <?= $this->Form->create(null, [
+                'url' => ['action' => 'requestCancellation', $appointment->id],
+                'id' => 'cancelForm'
+            ]) ?>
+            <div class="form-group">
+                <label for="cancelReason">Cancellation Reason <span style="color: #e11d48;">*</span></label>
+                <?= $this->Form->textarea('reason', [
+                    'id' => 'cancelReason',
+                    'class' => 'form-control',
+                    'rows' => 4,
+                    'required' => true,
+                    'placeholder' => 'Please provide a reason for cancellation...'
+                ]) ?>
+            </div>
+            <?= $this->Form->end() ?>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeCancelModal()">Cancel</button>
+            <button type="submit" form="cancelForm" class="btn btn-danger">Request Cancellation</button>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div id="rejectModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Reject Cancellation Request</h5>
+            <button class="modal-close" onclick="closeRejectModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <?= $this->Form->create(null, [
+                'url' => ['action' => 'rejectCancellation', $appointment->id],
+                'id' => 'rejectForm'
+            ]) ?>
+            <div class="form-group">
+                <label for="rejectReason">Rejection Reason <span style="color: #e11d48;">*</span></label>
+                <?= $this->Form->textarea('reason', [
+                    'id' => 'rejectReason',
+                    'class' => 'form-control',
+                    'rows' => 4,
+                    'required' => true,
+                    'placeholder' => 'Please provide a reason for rejecting this cancellation request...'
+                ]) ?>
+            </div>
+            <?= $this->Form->end() ?>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeRejectModal()">Cancel</button>
+            <button type="submit" form="rejectForm" class="btn btn-danger">Reject Cancellation</button>
         </div>
     </div>
 </div>
@@ -685,5 +1112,106 @@ document.addEventListener('DOMContentLoaded', function() {
     if (actionsBody) {
         actionsBody.insertBefore(printBtn, actionsBody.lastElementChild);
     }
+    
+    // Close modals on outside click
+    window.addEventListener('click', function(event) {
+        const cancelModal = document.getElementById('cancelModal');
+        const rejectModal = document.getElementById('rejectModal');
+        
+        if (event.target === cancelModal) {
+            closeCancelModal();
+        }
+        if (event.target === rejectModal) {
+            closeRejectModal();
+        }
+    });
+    
+    // Close modals on escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeCancelModal();
+            closeRejectModal();
+        }
+    });
 });
+
+// Cancel Modal
+function showCancelModal() {
+    const modal = document.getElementById('cancelModal');
+    if (modal) {
+        modal.style.display = 'block';
+        // Focus on reason textarea
+        const textarea = document.getElementById('cancelReason');
+        if (textarea) {
+            setTimeout(() => textarea.focus(), 100);
+        }
+    }
+}
+
+function closeCancelModal() {
+    const modal = document.getElementById('cancelModal');
+    if (modal) {
+        modal.style.display = 'none';
+        // Reset form
+        const form = document.getElementById('cancelForm');
+        if (form) {
+            form.reset();
+        }
+    }
+}
+
+// Reject Modal
+function showRejectModal() {
+    const modal = document.getElementById('rejectModal');
+    if (modal) {
+        modal.style.display = 'block';
+        // Focus on reason textarea
+        const textarea = document.getElementById('rejectReason');
+        if (textarea) {
+            setTimeout(() => textarea.focus(), 100);
+        }
+    }
+}
+
+function closeRejectModal() {
+    const modal = document.getElementById('rejectModal');
+    if (modal) {
+        modal.style.display = 'none';
+        // Reset form
+        const form = document.getElementById('rejectForm');
+        if (form) {
+            form.reset();
+        }
+    }
+}
 </script>
+
+<style>
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #1f1f1f;
+    font-size: 14px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+</style>

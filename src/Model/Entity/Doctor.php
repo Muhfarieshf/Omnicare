@@ -13,5 +13,7 @@ class Doctor extends Entity
         'updated_at' => true,
         'department' => true,
         'appointments' => true,
+        'doctorSchedules' => true,
+        'waitingList' => true,
     ];
 }

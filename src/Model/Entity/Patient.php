@@ -15,5 +15,6 @@ class Patient extends Entity
         'created_at' => true,
         'updated_at' => true,
         'appointments' => true,
+        'waiting_list' => true,
     ];
 }

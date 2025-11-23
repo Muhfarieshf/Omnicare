@@ -52,6 +52,25 @@ class AppointmentsTable extends Table
             'foreignKey' => 'doctor_id',
             'joinType' => 'INNER',
         ]);
+        $this->belongsTo('CancelledByUser', [
+            'className' => 'Users',
+            'foreignKey' => 'cancelled_by',
+            'joinType' => 'LEFT',
+        ]);
+        $this->belongsTo('ApprovedByUser', [
+            'className' => 'Users',
+            'foreignKey' => 'approved_by',
+            'joinType' => 'LEFT',
+        ]);
+        $this->hasMany('AppointmentStatusHistory', [
+            'foreignKey' => 'appointment_id',
+            'dependent' => true,
+            'cascadeCallbacks' => true,
+        ]);
+        $this->hasMany('WaitingList', [
+            'foreignKey' => 'fulfilled_appointment_id',
+            'dependent' => false,
+        ]);
     }
 
     /**
@@ -81,13 +100,69 @@ class AppointmentsTable extends Table
             ->notEmptyTime('appointment_time');
 
         $validator
+            ->integer('duration_minutes')
+            ->requirePresence('duration_minutes', 'create')
+            ->notEmptyString('duration_minutes')
+            ->add('duration_minutes', 'validRange', [
+                'rule' => function ($value, $context) {
+                    return $value >= 15 && $value <= 480; // 15 minutes to 8 hours
+                },
+                'message' => 'Duration must be between 15 and 480 minutes (8 hours)'
+            ]);
+
+        $validator
             ->scalar('status')
             ->maxLength('status', 20)
+            ->inList('status', [
+                'Scheduled',
+                'Confirmed',
+                'In Progress',
+                'Completed',
+                'Cancelled',
+                'No Show',
+                'Pending Approval'
+            ])
             ->allowEmptyString('status');
 
         $validator
             ->scalar('remarks')
             ->allowEmptyString('remarks');
+
+        $validator
+            ->dateTime('confirmed_at')
+            ->allowEmptyDateTime('confirmed_at');
+
+        $validator
+            ->dateTime('started_at')
+            ->allowEmptyDateTime('started_at');
+
+        $validator
+            ->dateTime('completed_at')
+            ->allowEmptyDateTime('completed_at');
+
+        $validator
+            ->dateTime('cancelled_at')
+            ->allowEmptyDateTime('cancelled_at');
+
+        $validator
+            ->integer('cancelled_by')
+            ->allowEmptyString('cancelled_by');
+
+        $validator
+            ->scalar('cancellation_reason')
+            ->allowEmptyString('cancellation_reason');
+
+        $validator
+            ->boolean('requires_approval')
+            ->allowEmptyString('requires_approval');
+
+        $validator
+            ->integer('approved_by')
+            ->allowEmptyString('approved_by');
+
+        $validator
+            ->dateTime('approved_at')
+            ->allowEmptyDateTime('approved_at');
 
         $validator
             ->dateTime('created_at')
@@ -111,6 +186,14 @@ class AppointmentsTable extends Table
     {
         $rules->add($rules->existsIn(['patient_id'], 'Patients'), ['errorField' => 'patient_id']);
         $rules->add($rules->existsIn(['doctor_id'], 'Doctors'), ['errorField' => 'doctor_id']);
+        $rules->add($rules->existsIn(['cancelled_by'], 'Users'), [
+            'errorField' => 'cancelled_by',
+            'message' => 'Invalid user for cancelled_by'
+        ]);
+        $rules->add($rules->existsIn(['approved_by'], 'Users'), [
+            'errorField' => 'approved_by',
+            'message' => 'Invalid user for approved_by'
+        ]);
 
         return $rules;
     }

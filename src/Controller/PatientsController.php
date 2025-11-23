@@ -8,34 +8,72 @@ class PatientsController extends AppController
 {
     public function index()
     {
-        // CakePHP 5.x pagination - pass query directly to paginate()
-        $query = $this->Patients->find();
-        $patients = $this->paginate($query);
-        $this->set(compact('patients'));
+        $currentUser = $this->Authentication->getIdentity();
+        
+        // For doctors, only show patients they have appointments with
+        if ($currentUser && $currentUser->role === 'doctor') {
+            // Get doctor's patients through appointments using a subquery approach
+            $doctorPatients = $this->Patients->find()
+                ->where([
+                    'Patients.id IN' => $this->Patients->Appointments->find()
+                        ->select(['patient_id'])
+                        ->where(['doctor_id' => $currentUser->doctor_id])
+                        ->group(['patient_id'])
+                ]);
+            
+            $patients = $this->paginate($doctorPatients);
+        } else {
+            // For admins and other roles, show all patients
+            $query = $this->Patients->find();
+            $patients = $this->paginate($query);
+        }
+        
+        $this->set(compact('patients', 'currentUser'));
     }
 
     public function view($id = null)
-{
-    $currentUser = $this->Authentication->getIdentity();
+    {
+        $currentUser = $this->Authentication->getIdentity();
 
-    // If the user is a patient, always show their own record
-    if ($currentUser && $currentUser->role === 'patient') {
-        if (!$currentUser->patient_id) {
-            $this->Flash->error('Your patient profile is incomplete. Please contact support.');
-            return $this->redirect(['controller' => 'Users', 'action' => 'logout']);
+        // If the user is a patient, always show their own record
+        if ($currentUser && $currentUser->role === 'patient') {
+            if (!$currentUser->patient_id) {
+                $this->Flash->error('Your patient profile is incomplete. Please contact support.');
+                return $this->redirect(['controller' => 'Users', 'action' => 'logout']);
+            }
+            $id = $currentUser->patient_id;
         }
-        $id = $currentUser->patient_id;
+
+        // If the user is a doctor, check if they have appointments with this patient
+        if ($currentUser && $currentUser->role === 'doctor') {
+            $hasAppointment = $this->Patients->Appointments->exists([
+                'patient_id' => $id,
+                'doctor_id' => $currentUser->doctor_id
+            ]);
+            
+            if (!$hasAppointment) {
+                $this->Flash->error('You can only view patients you have appointments with.');
+                return $this->redirect(['action' => 'index']);
+            }
+        }
+
+        $patient = $this->Patients->get($id, [
+            'contain' => ['Appointments'],
+        ]);
+
+        $this->set(compact('patient', 'currentUser'));
     }
-
-    $patient = $this->Patients->get($id, [
-        'contain' => ['Appointments'],
-    ]);
-
-    $this->set(compact('patient', 'currentUser'));
-}
 
     public function add()
     {
+        $currentUser = $this->Authentication->getIdentity();
+        
+        // Restrict access for doctors and patients
+        if ($currentUser && ($currentUser->role === 'doctor' || $currentUser->role === 'patient')) {
+            $this->Flash->error('You do not have permission to add patient records.');
+            return $this->redirect(['action' => 'index']);
+        }
+        
         $patient = $this->Patients->newEmptyEntity();
         if ($this->request->is('post')) {
             $patient = $this->Patients->patchEntity($patient, $this->request->getData());
@@ -51,6 +89,14 @@ class PatientsController extends AppController
 
     public function edit($id = null)
     {
+        $currentUser = $this->Authentication->getIdentity();
+        
+        // Restrict access for doctors and patients
+        if ($currentUser && ($currentUser->role === 'doctor' || $currentUser->role === 'patient')) {
+            $this->Flash->error('You do not have permission to edit patient records.');
+            return $this->redirect(['action' => 'index']);
+        }
+        
         $patient = $this->Patients->get($id);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $patient = $this->Patients->patchEntity($patient, $this->request->getData());
@@ -66,6 +112,14 @@ class PatientsController extends AppController
 
     public function delete($id = null)
     {
+        $currentUser = $this->Authentication->getIdentity();
+        
+        // Restrict access for doctors and patients
+        if ($currentUser && ($currentUser->role === 'doctor' || $currentUser->role === 'patient')) {
+            $this->Flash->error('You do not have permission to delete patient records.');
+            return $this->redirect(['action' => 'index']);
+        }
+        
         $this->request->allowMethod(['post', 'delete']);
         $patient = $this->Patients->get($id);
         if ($this->Patients->delete($patient)) {
