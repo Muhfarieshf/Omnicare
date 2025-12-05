@@ -4,35 +4,30 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Model\Table\AppointmentsTable;
+use App\Model\Table\DoctorSchedulesTable;
 use Cake\ORM\Locator\LocatorAwareTrait;
 
 /**
  * Appointment Conflict Detection Service
- * 
  * Handles conflict detection for appointments to prevent double-booking
- * and validate time slots.
+ * and validate time slots against doctor schedules.
  */
 class AppointmentConflictService
 {
     use LocatorAwareTrait;
 
     protected AppointmentsTable $appointmentsTable;
+    protected DoctorSchedulesTable $doctorSchedulesTable;
 
     public function __construct()
     {
         $tableLocator = $this->getTableLocator();
         $this->appointmentsTable = $tableLocator->get('Appointments');
+        $this->doctorSchedulesTable = $tableLocator->get('DoctorSchedules');
     }
 
     /**
      * Check if doctor is available at the requested time
-     *
-     * @param int $doctorId Doctor ID
-     * @param string|\Cake\I18n\Date $date Appointment date
-     * @param string|\Cake\I18n\Time $time Appointment time
-     * @param int $durationMinutes Appointment duration in minutes
-     * @param int|null $excludeAppointmentId Appointment ID to exclude from check (for updates)
-     * @return array ['available' => bool, 'conflicts' => array, 'message' => string]
      */
     public function checkDoctorAvailability(
         int $doctorId,
@@ -41,19 +36,20 @@ class AppointmentConflictService
         int $durationMinutes = 30,
         ?int $excludeAppointmentId = null
     ): array {
-        // Convert to CakePHP date/time objects if needed
         if (is_string($date)) {
             $date = new \Cake\I18n\Date($date);
         }
-        if (is_string($time)) {
-            $time = new \Cake\I18n\Time($time);
+
+        // --- NEW CHECK: VALIDATE WORKING HOURS ---
+        $scheduleCheck = $this->validateDoctorSchedule($doctorId, $date, $time, $durationMinutes);
+        if (!$scheduleCheck['available']) {
+            return $scheduleCheck;
         }
+        // -----------------------------------------
 
-        // Calculate appointment end time
         $startDateTime = $this->combineDateTime($date, $time);
-        $endDateTime = $startDateTime->copy()->addMinutes($durationMinutes);
+        $endDateTime = $startDateTime->addMinutes($durationMinutes);
 
-        // Find conflicting appointments
         $conflicts = $this->findConflictingAppointments(
             $doctorId,
             $date,
@@ -72,11 +68,14 @@ class AppointmentConflictService
 
         $conflictMessages = [];
         foreach ($conflicts as $conflict) {
+            $conflictStart = $this->combineDateTime($conflict->appointment_date, $conflict->appointment_time);
+            $conflictEnd = $conflictStart->addMinutes($conflict->duration_minutes ?? 30);
+            
             $conflictMessages[] = sprintf(
                 'Doctor has an appointment with %s from %s to %s',
                 $conflict->patient->name ?? 'Unknown',
-                $conflict->appointment_time->format('H:i'),
-                $conflict->appointment_time->copy()->addMinutes($conflict->duration_minutes)->format('H:i')
+                $conflictStart->format('h:i A'),
+                $conflictEnd->format('h:i A')
             );
         }
 
@@ -88,14 +87,65 @@ class AppointmentConflictService
     }
 
     /**
+     * Check if the requested time falls within the doctor's working schedule
+     */
+    protected function validateDoctorSchedule(int $doctorId, \Cake\I18n\Date $date, $time, int $duration): array
+    {
+        $dayOfWeek = $date->format('w'); // 0 (Sunday) to 6 (Saturday)
+
+        $schedule = $this->doctorSchedulesTable->find()
+            ->where([
+                'doctor_id' => $doctorId,
+                'day_of_week' => $dayOfWeek
+            ])
+            ->first();
+
+        // Case 1: No schedule defined for this day
+        if (!$schedule) {
+            return [
+                'available' => false,
+                'conflicts' => [],
+                'message' => 'Doctor is not working on this day.'
+            ];
+        }
+
+        // Case 2: Schedule exists but marked as Unavailable
+        if (!$schedule->is_available) {
+            return [
+                'available' => false,
+                'conflicts' => [],
+                'message' => 'Doctor has marked this day as unavailable.'
+            ];
+        }
+
+        // Case 3: Check Time Range
+        $reqTime = ($time instanceof \Cake\I18n\Time) ? $time : new \Cake\I18n\Time($time);
+        $reqEndTime = $reqTime->addMinutes($duration);
+
+        $shiftStart = $schedule->start_time;
+        $shiftEnd = $schedule->end_time;
+
+        // Check if appointment starts before shift or ends after shift
+        // Note: Using greaterThan/lessThan for strict comparison
+        if ($reqTime->format('H:i:s') < $shiftStart->format('H:i:s') || 
+            $reqEndTime->format('H:i:s') > $shiftEnd->format('H:i:s')) {
+            
+            return [
+                'available' => false,
+                'conflicts' => [],
+                'message' => sprintf(
+                    'Appointment is outside working hours (%s - %s).',
+                    $shiftStart->format('h:i A'),
+                    $shiftEnd->format('h:i A')
+                )
+            ];
+        }
+
+        return ['available' => true];
+    }
+
+    /**
      * Check if patient is available at the requested time
-     *
-     * @param int $patientId Patient ID
-     * @param string|\Cake\I18n\Date $date Appointment date
-     * @param string|\Cake\I18n\Time $time Appointment time
-     * @param int $durationMinutes Appointment duration in minutes
-     * @param int|null $excludeAppointmentId Appointment ID to exclude from check (for updates)
-     * @return array ['available' => bool, 'conflicts' => array, 'message' => string]
      */
     public function checkPatientAvailability(
         int $patientId,
@@ -104,19 +154,13 @@ class AppointmentConflictService
         int $durationMinutes = 30,
         ?int $excludeAppointmentId = null
     ): array {
-        // Convert to CakePHP date/time objects if needed
         if (is_string($date)) {
             $date = new \Cake\I18n\Date($date);
         }
-        if (is_string($time)) {
-            $time = new \Cake\I18n\Time($time);
-        }
 
-        // Calculate appointment end time
         $startDateTime = $this->combineDateTime($date, $time);
-        $endDateTime = $startDateTime->copy()->addMinutes($durationMinutes);
+        $endDateTime = $startDateTime->addMinutes($durationMinutes);
 
-        // Find conflicting appointments
         $conflicts = $this->findConflictingPatientAppointments(
             $patientId,
             $date,
@@ -135,11 +179,18 @@ class AppointmentConflictService
 
         $conflictMessages = [];
         foreach ($conflicts as $conflict) {
+            $conflictStart = $this->combineDateTime($conflict->appointment_date, $conflict->appointment_time);
+            $conflictEnd = $conflictStart->addMinutes($conflict->duration_minutes ?? 30);
+
+            $docName = $conflict->doctor->name ?? 'Unknown';
+            $prefix = (stripos($docName, 'Dr.') === 0) ? '' : 'Dr. ';
+
             $conflictMessages[] = sprintf(
-                'Patient has an appointment with Dr. %s from %s to %s',
-                $conflict->doctor->name ?? 'Unknown',
-                $conflict->appointment_time->format('H:i'),
-                $conflict->appointment_time->copy()->addMinutes($conflict->duration_minutes)->format('H:i')
+                'Patient has an appointment with %s%s from %s to %s',
+                $prefix,
+                $docName,
+                $conflictStart->format('h:i A'),
+                $conflictEnd->format('h:i A')
             );
         }
 
@@ -152,14 +203,6 @@ class AppointmentConflictService
 
     /**
      * Check for conflicts (both doctor and patient)
-     *
-     * @param int $doctorId Doctor ID
-     * @param int $patientId Patient ID
-     * @param string|\Cake\I18n\Date $date Appointment date
-     * @param string|\Cake\I18n\Time $time Appointment time
-     * @param int $durationMinutes Appointment duration in minutes
-     * @param int|null $excludeAppointmentId Appointment ID to exclude from check
-     * @return array ['available' => bool, 'doctor_conflicts' => array, 'patient_conflicts' => array, 'message' => string]
      */
     public function checkAvailability(
         int $doctorId,
@@ -192,13 +235,6 @@ class AppointmentConflictService
 
     /**
      * Find conflicting appointments for a doctor
-     *
-     * @param int $doctorId Doctor ID
-     * @param \Cake\I18n\Date $date Appointment date
-     * @param \Cake\I18n\FrozenTime $startDateTime Start datetime
-     * @param \Cake\I18n\FrozenTime $endDateTime End datetime
-     * @param int|null $excludeAppointmentId Appointment ID to exclude
-     * @return array Conflicting appointments
      */
     protected function findConflictingAppointments(
         int $doctorId,
@@ -207,20 +243,18 @@ class AppointmentConflictService
         \Cake\I18n\FrozenTime $endDateTime,
         ?int $excludeAppointmentId = null
     ): array {
-        // Statuses that should be considered as conflicts
         $activeStatuses = ['Scheduled', 'Confirmed', 'In Progress', 'Pending Approval'];
 
         $query = $this->appointmentsTable->find()
             ->contain(['Patients', 'Doctors'])
             ->where([
-                'doctor_id' => $doctorId,
-                'appointment_date' => $date,
-                'status IN' => $activeStatuses
+                'Appointments.doctor_id' => $doctorId,
+                'Appointments.appointment_date' => $date,
+                'Appointments.status IN' => $activeStatuses
             ]);
 
-        // Exclude current appointment if updating
         if ($excludeAppointmentId !== null) {
-            $query->where(['id !=' => $excludeAppointmentId]);
+            $query->where(['Appointments.id !=' => $excludeAppointmentId]);
         }
 
         $appointments = $query->toArray();
@@ -231,9 +265,8 @@ class AppointmentConflictService
                 $appointment->appointment_date,
                 $appointment->appointment_time
             );
-            $appointmentEnd = $appointmentStart->copy()->addMinutes($appointment->duration_minutes ?? 30);
+            $appointmentEnd = $appointmentStart->addMinutes($appointment->duration_minutes ?? 30);
 
-            // Check for time overlap
             if ($this->timesOverlap($startDateTime, $endDateTime, $appointmentStart, $appointmentEnd)) {
                 $conflicts[] = $appointment;
             }
@@ -244,13 +277,6 @@ class AppointmentConflictService
 
     /**
      * Find conflicting appointments for a patient
-     *
-     * @param int $patientId Patient ID
-     * @param \Cake\I18n\Date $date Appointment date
-     * @param \Cake\I18n\FrozenTime $startDateTime Start datetime
-     * @param \Cake\I18n\FrozenTime $endDateTime End datetime
-     * @param int|null $excludeAppointmentId Appointment ID to exclude
-     * @return array Conflicting appointments
      */
     protected function findConflictingPatientAppointments(
         int $patientId,
@@ -259,20 +285,18 @@ class AppointmentConflictService
         \Cake\I18n\FrozenTime $endDateTime,
         ?int $excludeAppointmentId = null
     ): array {
-        // Statuses that should be considered as conflicts
         $activeStatuses = ['Scheduled', 'Confirmed', 'In Progress', 'Pending Approval'];
 
         $query = $this->appointmentsTable->find()
             ->contain(['Patients', 'Doctors'])
             ->where([
-                'patient_id' => $patientId,
-                'appointment_date' => $date,
-                'status IN' => $activeStatuses
+                'Appointments.patient_id' => $patientId,
+                'Appointments.appointment_date' => $date,
+                'Appointments.status IN' => $activeStatuses
             ]);
 
-        // Exclude current appointment if updating
         if ($excludeAppointmentId !== null) {
-            $query->where(['id !=' => $excludeAppointmentId]);
+            $query->where(['Appointments.id !=' => $excludeAppointmentId]);
         }
 
         $appointments = $query->toArray();
@@ -283,9 +307,8 @@ class AppointmentConflictService
                 $appointment->appointment_date,
                 $appointment->appointment_time
             );
-            $appointmentEnd = $appointmentStart->copy()->addMinutes($appointment->duration_minutes ?? 30);
+            $appointmentEnd = $appointmentStart->addMinutes($appointment->duration_minutes ?? 30);
 
-            // Check for time overlap
             if ($this->timesOverlap($startDateTime, $endDateTime, $appointmentStart, $appointmentEnd)) {
                 $conflicts[] = $appointment;
             }
@@ -294,53 +317,27 @@ class AppointmentConflictService
         return $conflicts;
     }
 
-    /**
-     * Check if two time ranges overlap
-     *
-     * @param \Cake\I18n\FrozenTime $start1 Start of first range
-     * @param \Cake\I18n\FrozenTime $end1 End of first range
-     * @param \Cake\I18n\FrozenTime $start2 Start of second range
-     * @param \Cake\I18n\FrozenTime $end2 End of second range
-     * @return bool True if ranges overlap
-     */
     protected function timesOverlap(
         \Cake\I18n\FrozenTime $start1,
         \Cake\I18n\FrozenTime $end1,
         \Cake\I18n\FrozenTime $start2,
         \Cake\I18n\FrozenTime $end2
     ): bool {
-        // Two ranges overlap if: start1 < end2 AND start2 < end1
-        return $start1->lt($end2) && $start2->lt($end1);
+        return $start1->lessThan($end2) && $start2->lessThan($end1);
     }
 
-    /**
-     * Combine date and time into a datetime object
-     *
-     * @param \Cake\I18n\Date|string $date Date
-     * @param \Cake\I18n\Time|string $time Time
-     * @return \Cake\I18n\FrozenTime Combined datetime
-     */
     protected function combineDateTime($date, $time): \Cake\I18n\FrozenTime
     {
-        if ($date instanceof \Cake\I18n\Date && $time instanceof \Cake\I18n\Time) {
-            return \Cake\I18n\FrozenTime::create(
-                $date->year,
-                $date->month,
-                $date->day,
-                $time->hour,
-                $time->minute,
-                $time->second
-            );
-        }
-
-        // Fallback for string inputs
-        $dateStr = $date instanceof \Cake\I18n\Date ? $date->format('Y-m-d') : $date;
-        $timeStr = $time instanceof \Cake\I18n\Time ? $time->format('H:i:s') : $time;
+        $dateStr = $date instanceof \DateTimeInterface ? $date->format('Y-m-d') : (string)$date;
+        $timeStr = $time instanceof \DateTimeInterface ? $time->format('H:i:s') : (string)$time;
         
-        return \Cake\I18n\FrozenTime::createFromFormat('Y-m-d H:i:s', $dateStr . ' ' . $timeStr);
+        if (strlen($timeStr) === 5) {
+            $timeStr .= ':00';
+        }
+        if (strlen($timeStr) === 4) {
+            $timeStr = '0' . $timeStr . ':00';
+        }
+        
+        return new \Cake\I18n\FrozenTime($dateStr . ' ' . $timeStr);
     }
 }
-
-
-
-

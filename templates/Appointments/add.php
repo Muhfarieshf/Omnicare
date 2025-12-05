@@ -586,18 +586,31 @@ body::before {
             </div>
             
             <div class="form-group">
-                <?= $this->Form->control('appointment_time', [
+            <?= $this->Form->control('appointment_time', [
                     'type' => 'time',
                     'class' => 'form-control',
                     'label' => ['class' => 'required'],
-                    'id' => 'appointment_time'
+                    'id' => 'appointment_time',
+                    'step' => 900 // Forces 15-minute intervals, hides seconds/ms
                 ]) ?>
                 <!-- Conflict Detection Message -->
                 <div id="conflict-message" class="conflict-message" style="display: none;"></div>
                 <!-- Available Slots Display -->
                 <div id="available-slots" class="available-slots" style="display: none;"></div>
-            </div>
-        </div>
+
+                <div id="waiting-list-prompt" class="alert alert-warning mt-3" style="display: none; border-left: 4px solid #f59e0b; background-color: rgba(245, 158, 11, 0.1); padding: 15px; border-radius: 4px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <h6 style="margin: 0; color: #d97706; font-weight: 700;">No slots available</h6>
+                            <p style="margin: 5px 0 0; font-size: 13px; color: #92400e;">
+                                All appointments for this date are booked or the doctor is unavailable.
+                            </p>
+                        </div>
+                        <a id="join-waiting-list-btn" href="#" class="btn btn-sm btn-primary" style="white-space: nowrap;">
+                            <i class="fas fa-clock"></i> Join Waiting List
+                        </a>
+                    </div>
+                </div>
 
         <!-- Duration -->
         <div class="form-group">
@@ -622,33 +635,36 @@ body::before {
             </div>
         </div>
 
-        <!-- Status -->
-        <div class="form-group">
-            <?= $this->Form->control('status', [
-                'type' => 'select',
-                'options' => [
-                    'Scheduled' => 'Scheduled',
-                    'Confirmed' => 'Confirmed',
-                    'In Progress' => 'In Progress',
-                    'Completed' => 'Completed',
-                    'Cancelled' => 'Cancelled',
-                    'No Show' => 'No Show',
-                    'Pending Approval' => 'Pending Approval'
-                ],
-                'class' => 'form-select',
-                'label' => ['class' => 'required'],
-                'value' => $appointment->status ?? 'Scheduled'
-            ]) ?>
-            <div class="status-preview">
-                <span class="status-badge status-scheduled">Scheduled</span>
-                <span class="status-badge status-confirmed">Confirmed</span>
-                <span class="status-badge status-in-progress">In Progress</span>
-                <span class="status-badge status-completed">Completed</span>
-                <span class="status-badge status-cancelled">Cancelled</span>
-                <span class="status-badge status-no-show">No Show</span>
-                <span class="status-badge status-pending-approval">Pending Approval</span>
+                <?php if (isset($currentUser) && in_array($currentUser->role, ['admin', 'doctor'])): ?>
+            <div class="form-group">
+                <?= $this->Form->control('status', [
+                    'type' => 'select',
+                    'options' => [
+                        'Scheduled' => 'Scheduled',
+                        'Confirmed' => 'Confirmed',
+                        'In Progress' => 'In Progress',
+                        'Completed' => 'Completed',
+                        'Cancelled' => 'Cancelled',
+                        'No Show' => 'No Show',
+                        'Pending Approval' => 'Pending Approval'
+                    ],
+                    'class' => 'form-select',
+                    'label' => ['class' => 'required'],
+                    'value' => $appointment->status ?? 'Scheduled'
+                ]) ?>
+                <div class="status-preview">
+                    <span class="status-badge status-scheduled">Scheduled</span>
+                    <span class="status-badge status-confirmed">Confirmed</span>
+                    <span class="status-badge status-in-progress">In Progress</span>
+                    <span class="status-badge status-completed">Completed</span>
+                    <span class="status-badge status-cancelled">Cancelled</span>
+                    <span class="status-badge status-no-show">No Show</span>
+                    <span class="status-badge status-pending-approval">Pending Approval</span>
+                </div>
             </div>
-        </div>
+        <?php else: ?>
+            <?= $this->Form->hidden('status', ['value' => 'Pending Approval']) ?>
+        <?php endif; ?>
 
         <!-- Remarks -->
         <div class="form-group">
@@ -682,12 +698,26 @@ body::before {
 </div>
 
 <script>
-// Form Enhancement
 document.addEventListener('DOMContentLoaded', function() {
-    // Add loading state to submit button
+    // Form Elements
     const form = document.querySelector('form');
     const submitBtn = document.querySelector('.btn-primary');
+    const doctorSelect = document.querySelector('select[name="doctor_id"]');
+    const patientSelect = document.querySelector('select[name="patient_id"]');
+    const dateInput = document.querySelector('input[name="appointment_date"]');
+    const timeInput = document.querySelector('input[name="appointment_time"]');
+    const durationInput = document.querySelector('input[name="duration_minutes"]');
     
+    // UI Elements
+    const conflictMessage = document.getElementById('conflict-message');
+    const availableSlotsDiv = document.getElementById('available-slots');
+    const alternativeDoctorsDiv = document.getElementById('alternative-doctors');
+    const waitingListPrompt = document.getElementById('waiting-list-prompt');
+    const alternativesList = document.getElementById('alternatives-list');
+
+    let checkTimeout;
+
+    // 1. Form Submission Loading State
     if (form && submitBtn) {
         form.addEventListener('submit', function() {
             submitBtn.disabled = true;
@@ -695,89 +725,73 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Auto-focus first empty field
-    const firstInput = document.querySelector('.form-control:not([value]), .form-select:not([value])');
-    if (firstInput) {
-        firstInput.focus();
-    }
-    
-    // Date validation (prevent past dates for new appointments)
-    const dateInput = document.querySelector('input[type="date"]');
+    // 2. Date/Time Validation helpers
     if (dateInput) {
         const today = new Date().toISOString().split('T')[0];
         dateInput.min = today;
-    }
-    
-    // Time validation (prevent past times for today)
-    const timeInput = document.querySelector('input[type="time"]');
-    if (dateInput && timeInput) {
-        function validateTime() {
-            const selectedDate = dateInput.value;
-            const today = new Date().toISOString().split('T')[0];
-            
-            if (selectedDate === today) {
+        
+        dateInput.addEventListener('change', function() {
+            if (timeInput && this.value === today) {
                 const now = new Date();
                 const currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
                                    now.getMinutes().toString().padStart(2, '0');
                 timeInput.min = currentTime;
-            } else {
+            } else if (timeInput) {
                 timeInput.removeAttribute('min');
             }
-        }
-        
-        dateInput.addEventListener('change', validateTime);
-        validateTime(); // Run on page load
+        });
     }
 
-    // Conflict Detection and Available Slots
-    const doctorSelect = document.querySelector('select[name="doctor_id"]');
-    const patientSelect = document.querySelector('select[name="patient_id"]');
-    const durationInput = document.querySelector('input[name="duration_minutes"]');
-    const conflictMessage = document.getElementById('conflict-message');
-    const availableSlotsDiv = document.getElementById('available-slots');
-    const alternativeDoctorsDiv = document.getElementById('alternative-doctors');
-    const alternativesList = document.getElementById('alternatives-list');
-
-    let checkTimeout;
-
+    // 3. Main Availability Logic
     function checkAvailability() {
         const doctorId = doctorSelect?.value;
-        const patientId = patientSelect?.value;
         const date = dateInput?.value;
-        const time = timeInput?.value;
         const duration = durationInput?.value || 30;
 
         // Clear previous timeout
-        if (checkTimeout) {
-            clearTimeout(checkTimeout);
-        }
+        if (checkTimeout) clearTimeout(checkTimeout);
 
-        // Wait for user to finish typing
         checkTimeout = setTimeout(() => {
-            if (!doctorId || !patientId || !date || !time) {
-                conflictMessage.style.display = 'none';
-                availableSlotsDiv.style.display = 'none';
-                alternativeDoctorsDiv.style.display = 'none';
+            // If missing critical data (Doctor or Date), hide everything
+            if (!doctorId || !date) {
+                if (conflictMessage) conflictMessage.style.display = 'none';
+                if (availableSlotsDiv) availableSlotsDiv.style.display = 'none';
+                if (alternativeDoctorsDiv) alternativeDoctorsDiv.style.display = 'none';
+                if (waitingListPrompt) waitingListPrompt.style.display = 'none';
                 return;
             }
 
-            // Check conflict via form submission simulation (would need AJAX endpoint)
-            // For now, just load available slots
+            // Load slots (Even if time is empty)
             loadAvailableSlots(doctorId, date, duration);
         }, 500);
     }
 
     function loadAvailableSlots(doctorId, date, duration) {
-        if (!doctorId || !date) return;
+        // Reset UI
+        if (availableSlotsDiv) availableSlotsDiv.style.display = 'none';
+        if (alternativeDoctorsDiv) alternativeDoctorsDiv.style.display = 'none';
+        if (waitingListPrompt) waitingListPrompt.style.display = 'none';
+        if (conflictMessage) conflictMessage.style.display = 'none';
 
         fetch(`/appointments/available-slots?doctor_id=${doctorId}&date=${date}&duration=${duration}`)
             .then(response => response.json())
             .then(data => {
                 if (data.slots && data.slots.length > 0) {
+                    // Case A: Slots Available
                     displayAvailableSlots(data.slots);
                 } else {
-                    availableSlotsDiv.style.display = 'none';
-                    // Show alternative doctors
+                    // Case B: No Availability -> Show Waiting List Button
+                    if (waitingListPrompt) {
+                        waitingListPrompt.style.display = 'block';
+                        
+                        // Update "Join" link
+                        const btn = document.getElementById('join-waiting-list-btn');
+                        if (btn) {
+                            const baseUrl = "<?= $this->Url->build(['controller' => 'WaitingList', 'action' => 'add']) ?>";
+                            btn.href = `${baseUrl}?doctor_id=${doctorId}&date=${date}`;
+                        }
+                    }
+                    // Also show alternatives
                     loadAlternativeDoctors(doctorId, date, timeInput?.value, duration);
                 }
             })
@@ -787,6 +801,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function displayAvailableSlots(slots) {
+        if (!availableSlotsDiv) return;
+        
         availableSlotsDiv.style.display = 'block';
         availableSlotsDiv.innerHTML = `
             <h6><i class="fas fa-clock"></i> Available Time Slots</h6>
@@ -799,25 +815,21 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
 
-        // Add click handlers
+        // Click handlers for slots
         availableSlotsDiv.querySelectorAll('.slot-item').forEach(item => {
             item.addEventListener('click', function() {
-                // Remove previous selection
                 availableSlotsDiv.querySelectorAll('.slot-item').forEach(i => i.classList.remove('selected'));
-                // Add selection
                 this.classList.add('selected');
-                // Set time input
                 if (timeInput) {
                     timeInput.value = this.dataset.time;
+                    // Trigger conflict check visuals manually
+                    showConflictMessage('Time slot selected: ' + this.dataset.time, 'success');
                 }
-                // Show success message
-                showConflictMessage('Time slot selected: ' + this.dataset.time, 'success');
             });
         });
     }
 
     function loadAlternativeDoctors(doctorId, date, time, duration) {
-        // Get department ID from doctors data
         const doctorsData = <?= json_encode(isset($doctorsWithDept) ? array_map(function($d) {
             return ['id' => $d->id, 'department_id' => $d->department_id];
         }, $doctorsWithDept) : []) ?>;
@@ -825,34 +837,35 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedDoctor = doctorsData.find(d => d.id == doctorId);
         const departmentId = selectedDoctor?.department_id;
 
-        if (!departmentId || !date || !time) return;
+        if (!departmentId || !date) return;
 
-        fetch(`/appointments/alternative-doctors?department_id=${departmentId}&date=${date}&time=${time}&duration=${duration}&exclude_doctor_id=${doctorId}`)
+        // Default time if empty (just to find generally available doctors)
+        const checkTime = time || '09:00'; 
+
+        fetch(`/appointments/alternative-doctors?department_id=${departmentId}&date=${date}&time=${checkTime}&duration=${duration}&exclude_doctor_id=${doctorId}`)
             .then(response => response.json())
             .then(data => {
                 if (data.alternatives && data.alternatives.length > 0) {
-                    displayAlternativeDoctors(data.alternatives);
+                    if (alternativeDoctorsDiv) {
+                        alternativeDoctorsDiv.style.display = 'block';
+                        if (alternativesList) {
+                            alternativesList.innerHTML = data.alternatives.map(alt => `
+                                <div class="alternative-doctor-item">
+                                    <div class="doctor-info">
+                                        <div class="doctor-name">Dr. ${alt.doctor.name}</div>
+                                        <div class="doctor-slots">${alt.available_slots.length} slots near requested time</div>
+                                    </div>
+                                    ${alt.available ? '<span class="available-badge">Available</span>' : '<span class="available-badge" style="background: rgba(225,29,72,0.1); color: #e11d48;">Not Available</span>'}
+                                </div>
+                            `).join('');
+                        }
+                    }
                 }
-            })
-            .catch(error => {
-                console.error('Error loading alternative doctors:', error);
             });
     }
 
-    function displayAlternativeDoctors(alternatives) {
-        alternativeDoctorsDiv.style.display = 'block';
-        alternativesList.innerHTML = alternatives.map(alt => `
-            <div class="alternative-doctor-item">
-                <div class="doctor-info">
-                    <div class="doctor-name">Dr. ${alt.doctor.name}</div>
-                    <div class="doctor-slots">${alt.available_slots.length} available slots</div>
-                </div>
-                ${alt.available ? '<span class="available-badge">Available</span>' : '<span class="available-badge" style="background: rgba(225,29,72,0.1); color: #e11d48;">Not Available</span>'}
-            </div>
-        `).join('');
-    }
-
     function showConflictMessage(message, type = 'error') {
+        if (!conflictMessage) return;
         conflictMessage.textContent = message;
         conflictMessage.className = `conflict-message ${type}`;
         conflictMessage.style.display = 'block';
@@ -864,9 +877,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add event listeners
     if (doctorSelect) doctorSelect.addEventListener('change', checkAvailability);
-    if (patientSelect) patientSelect.addEventListener('change', checkAvailability);
     if (dateInput) dateInput.addEventListener('change', checkAvailability);
-    if (timeInput) timeInput.addEventListener('change', checkAvailability);
+    if (timeInput) timeInput.addEventListener('change', checkAvailability); // Keep this for manual entry updates
     if (durationInput) durationInput.addEventListener('change', checkAvailability);
+
+    // Run once on load (in case of edit or validation error redirect)
+    if (doctorSelect?.value && dateInput?.value) {
+        checkAvailability();
+    }
 });
 </script>

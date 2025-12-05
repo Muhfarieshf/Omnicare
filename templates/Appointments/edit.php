@@ -663,12 +663,13 @@ body::before {
             </div>
             
             <div class="form-group">
-                <?= $this->Form->control('appointment_time', [
-                    'type' => 'time',
-                    'class' => 'form-control',
-                    'label' => ['class' => 'required'],
-                    'id' => 'appointment_time'
-                ]) ?>
+            <?= $this->Form->control('appointment_time', [
+                        'type' => 'time',
+                        'class' => 'form-control',
+                        'label' => ['class' => 'required'],
+                        'id' => 'appointment_time',
+                        'step' => 900
+                    ]) ?>
                 <!-- Conflict Detection Message -->
                 <div id="conflict-message" class="conflict-message" style="display: none;"></div>
                 <!-- Available Slots Display -->
@@ -698,6 +699,8 @@ body::before {
                 <div id="alternatives-list"></div>
             </div>
         </div>
+
+        
 
         <!-- Status -->
         <div class="form-group">

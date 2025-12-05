@@ -357,10 +357,22 @@
                                         ['controller' => 'Doctors', 'action' => 'index'], 
                                         ['class' => 'nav-link' . ($currentController === 'Doctors' ? ' current-page' : ''), 'escape' => false]) ?>
                                 </li>
+                                
+                                <li class="nav-item">
+                                    <?= $this->Html->link('<i class="fas fa-clock"></i> Schedules', 
+                                        ['controller' => 'DoctorSchedules', 'action' => 'index'], 
+                                        ['class' => 'nav-link' . ($currentController === 'DoctorSchedules' ? ' current-page' : ''), 'escape' => false]) ?>
+                                </li>
                                 <li class="nav-item">
                                     <?= $this->Html->link('<i class="fas fa-building"></i> Departments', 
                                         ['controller' => 'Departments', 'action' => 'index'], 
                                         ['class' => 'nav-link' . ($currentController === 'Departments' ? ' current-page' : ''), 'escape' => false]) ?>
+                                </li>
+
+                                <li class="nav-item">
+                                    <?= $this->Html->link('<i class="fas fa-hourglass-half"></i> Waiting List', 
+                                        ['controller' => 'WaitingList', 'action' => 'index'], 
+                                        ['class' => 'nav-link' . ($currentController === 'WaitingList' ? ' current-page' : ''), 'escape' => false]) ?>
                                 </li>
                                 
                                 <div class="menu-section">
@@ -393,11 +405,25 @@
                                             ['controller' => 'Appointments', 'action' => 'index'], 
                                             ['class' => 'nav-link' . ($currentController === 'Appointments' ? ' current-page' : ''), 'escape' => false]) ?>
                                     </li>
+
+                                    <li class="nav-item">
+                                         <?= $this->Html->link('<i class="fas fa-clock"></i> My Schedule', 
+                                             ['controller' => 'DoctorSchedules', 'action' => 'index'], 
+                                            ['class' => 'nav-link' . ($currentController === 'DoctorSchedules' ? ' current-page' : ''), 'escape' => false]) ?>
+                                  </li>
+
                                     <li class="nav-item">
                                         <?= $this->Html->link('<i class="fas fa-users"></i> Patients', 
                                             ['controller' => 'Patients', 'action' => 'index'], 
                                             ['class' => 'nav-link' . ($currentController === 'Patients' ? ' current-page' : ''), 'escape' => false]) ?>
                                     </li>
+
+                                    <li class="nav-item">
+                                        <?= $this->Html->link('<i class="fas fa-hourglass-half"></i> Waiting List', 
+                                            ['controller' => 'WaitingList', 'action' => 'index'], 
+                                            ['class' => 'nav-link' . ($currentController === 'WaitingList' ? ' current-page' : ''), 'escape' => false]) ?>
+                                    </li>
+
                                 </div>
                                 
                                 <div class="menu-section">
@@ -426,6 +452,12 @@
                                     <?= $this->Html->link('<i class="fas fa-user"></i> My Profile', 
                                         ['controller' => 'Patients', 'action' => 'view', $currentUser->id], 
                                         ['class' => 'nav-link' . ($currentController === 'Patients' && $currentAction === 'view' ? ' current-page' : ''), 'escape' => false]) ?>
+                                </li>
+
+                                <li class="nav-item">
+                                    <?= $this->Html->link('<i class="fas fa-clock"></i> Waiting List', 
+                                        ['controller' => 'WaitingList', 'action' => 'index'], 
+                                        ['class' => 'nav-link' . ($currentController === 'WaitingList' ? ' current-page' : ''), 'escape' => false]) ?>
                                 </li>
                             
                             <?php elseif ($userRole === 'staff'): ?>

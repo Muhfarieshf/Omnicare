@@ -109,21 +109,15 @@ class AppointmentStatusHistoryTable extends Table
         return $validator;
     }
 
-    /**
-     * Returns a rules checker object that will be used for validating
-     * application integrity.
-     *
-     * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
-     * @return \Cake\ORM\RulesChecker
-     */
     public function buildRules(RulesChecker $rules): RulesChecker
-    {
-        $rules->add($rules->existsIn(['appointment_id'], 'Appointments'), ['errorField' => 'appointment_id']);
-        $rules->add($rules->existsIn(['changed_by'], 'Users'), ['errorField' => 'changed_by']);
+{
+    $rules->add($rules->existsIn(['appointment_id'], 'Appointments'), ['errorField' => 'appointment_id']);
+    
+    
+    $rules->add($rules->existsIn(['changed_by'], 'ChangedByUser'), ['errorField' => 'changed_by']);
 
-        return $rules;
-    }
-
+    return $rules;
+}
     /**
      * Find history for a specific appointment
      *

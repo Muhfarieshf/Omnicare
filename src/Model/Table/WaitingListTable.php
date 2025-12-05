@@ -158,6 +158,7 @@ class WaitingListTable extends Table
      */
     public function buildRules(RulesChecker $rules): RulesChecker
     {
+        // Existing Foreign Key Rules
         $rules->add($rules->existsIn(['patient_id'], 'Patients'), ['errorField' => 'patient_id']);
         $rules->add($rules->existsIn(['doctor_id'], 'Doctors'), [
             'errorField' => 'doctor_id',
@@ -167,10 +168,17 @@ class WaitingListTable extends Table
             'errorField' => 'department_id',
             'message' => 'Invalid department'
         ]);
-        $rules->add($rules->existsIn(['fulfilled_appointment_id'], 'Appointments'), [
+        $rules->add($rules->existsIn(['fulfilled_appointment_id'], 'FulfilledAppointment'), [
             'errorField' => 'fulfilled_appointment_id',
             'message' => 'Invalid appointment'
         ]);
+
+        // --- NEW RULE: PREVENT DUPLICATES ---
+        // Prevent the same patient from queuing for the exact same date/time preference twice
+        $rules->add($rules->isUnique(
+            ['patient_id', 'preferred_date', 'preferred_time'],
+            'You are already on the waiting list for this preferred date and time.'
+        ));
 
         return $rules;
     }

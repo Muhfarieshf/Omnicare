@@ -518,17 +518,32 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <div class="appointments-container">
-    <div class="page-header">
+<div class="page-header">
         <h3 class="page-title">
             <i class="fas fa-calendar-check"></i>
             Appointments
         </h3>
         <div style="display: flex; gap: 12px; align-items: center;">
+            <?php 
+            // Determine the correct dashboard based on role
+            $user = $this->getRequest()->getAttribute('identity');
+            $dashboardUrl = ['controller' => 'Appointments', 'action' => 'dashboard']; // Default/Admin
+
+            if ($user) {
+                if ($user->role === 'doctor') {
+                    $dashboardUrl = ['controller' => 'Doctors', 'action' => 'dashboard'];
+                } elseif ($user->role === 'patient') {
+                    $dashboardUrl = ['controller' => 'Patients', 'action' => 'dashboard'];
+                }
+            }
+            ?>
+            
             <?= $this->Html->link(
                 '<i class="fas fa-calendar-day"></i> Dashboard', 
-                ['action' => 'dashboard'], 
+                $dashboardUrl, 
                 ['class' => 'btn btn-outline-primary', 'escape' => false]
             ) ?>
+            
             <?= $this->Html->link(
                 '<i class="fas fa-plus"></i> New Appointment', 
                 ['action' => 'add'], 

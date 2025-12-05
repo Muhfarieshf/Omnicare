@@ -186,11 +186,15 @@ class AppointmentsTable extends Table
     {
         $rules->add($rules->existsIn(['patient_id'], 'Patients'), ['errorField' => 'patient_id']);
         $rules->add($rules->existsIn(['doctor_id'], 'Doctors'), ['errorField' => 'doctor_id']);
-        $rules->add($rules->existsIn(['cancelled_by'], 'Users'), [
+        
+        // FIXED: Use the Association Alias 'CancelledByUser' instead of the Table name 'Users'
+        $rules->add($rules->existsIn(['cancelled_by'], 'CancelledByUser'), [
             'errorField' => 'cancelled_by',
             'message' => 'Invalid user for cancelled_by'
         ]);
-        $rules->add($rules->existsIn(['approved_by'], 'Users'), [
+        
+        // FIXED: Use the Association Alias 'ApprovedByUser' instead of the Table name 'Users'
+        $rules->add($rules->existsIn(['approved_by'], 'ApprovedByUser'), [
             'errorField' => 'approved_by',
             'message' => 'Invalid user for approved_by'
         ]);

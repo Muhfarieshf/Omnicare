@@ -67,7 +67,7 @@ class AppointmentsController extends AppController
     public function view($id = null)
     {
         $appointment = $this->Appointments->get($id, [
-            'contain' => ['Patients', 'Doctors', 'CancelledByUser', 'ApprovedByUser', 'StatusHistory' => ['ChangedByUser']],
+            'contain' => ['Patients', 'Doctors', 'CancelledByUser', 'ApprovedByUser', 'AppointmentStatusHistory' => ['ChangedByUser']],
         ]);
 
         $user = $this->Authentication->getIdentity();
@@ -107,7 +107,13 @@ class AppointmentsController extends AppController
         if ($this->request->is('post')) {
             $data = $this->request->getData();
             
-            // Set defaults
+            
+            if ($user->role === 'patient') {
+                $data['status'] = 'Pending Approval'; 
+                $data['patient_id'] = $user->patient_id; 
+            }
+            
+
             if (empty($data['duration_minutes'])) {
                 $data['duration_minutes'] = 30;
             }
@@ -176,9 +182,8 @@ class AppointmentsController extends AppController
             'limit' => 200
         ])->where(['status' => 'active']);
         
-        // Get doctors with department info for JavaScript
         $doctorsWithDept = $this->Appointments->Doctors->find()
-            ->where(['status' => 'active'])
+            ->where(['Doctors.status' => 'active']) // <--- FIXED (Added alias)
             ->contain(['Departments'])
             ->toArray();
         
@@ -247,12 +252,11 @@ class AppointmentsController extends AppController
             'limit' => 200
         ])->where(['status' => 'active']);
         
-        // Get doctors with department info for JavaScript
         $doctorsWithDept = $this->Appointments->Doctors->find()
-            ->where(['status' => 'active'])
+            ->where(['Doctors.status' => 'active'])
             ->contain(['Departments'])
             ->toArray();
-        
+                
         $this->set(compact('appointment', 'patients', 'doctors', 'doctorsWithDept'));
     }
 

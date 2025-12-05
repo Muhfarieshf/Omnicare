@@ -28,13 +28,15 @@ class AppointmentWorkflowService
         'Scheduled' => ['Confirmed', 'Cancelled', 'Pending Approval'],
         'Confirmed' => ['In Progress', 'Cancelled', 'Pending Approval'],
         'In Progress' => ['Completed', 'Cancelled'],
-        'Pending Approval' => ['Cancelled', 'Scheduled'], // Approved -> Cancelled, Rejected -> Scheduled
-        'Completed' => [], // Final state
-        'Cancelled' => [], // Final state
-        'No Show' => [], // Final state
+        
+        // FIXED: Added 'Confirmed' so doctors can accept new requests
+        'Pending Approval' => ['Cancelled', 'Scheduled', 'Confirmed'], 
+        
+        'Completed' => [], 
+        'Cancelled' => [], 
+        'No Show' => [], 
     ];
 
-    // Statuses that require approval for cancellation
     protected array $cancellationRequiresApproval = [
         'Confirmed',
         'In Progress'
@@ -95,11 +97,17 @@ class AppointmentWorkflowService
                 'Scheduled' => ['Confirmed', 'Cancelled'],
                 'Confirmed' => ['In Progress', 'Cancelled'],
                 'In Progress' => ['Completed'],
-                'Pending Approval' => ['Cancelled'], // Can approve cancellation
+                'Pending Approval' => ['Cancelled', 'Confirmed'], 
             ],
             'patient' => [
-                'Scheduled' => ['Pending Approval'], // Request cancellation
-                'Confirmed' => ['Pending Approval'], // Request cancellation
+                // Allow cancelling a Scheduled appointment directly
+                'Scheduled' => ['Pending Approval', 'Cancelled'], 
+                
+                // Allow requesting cancellation for a Confirmed appointment
+                'Confirmed' => ['Pending Approval'], 
+                
+                // FIXED: Allow withdrawing a Pending request (New Appointment)
+                'Pending Approval' => ['Cancelled'], 
             ],
         ];
 

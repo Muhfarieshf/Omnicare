@@ -101,7 +101,7 @@ class DoctorSchedulesTable extends Table
                     if (isset($context['data']['start_time']) && $value) {
                         $start = new \Cake\I18n\Time($context['data']['start_time']);
                         $end = new \Cake\I18n\Time($value);
-                        return $end->gt($start);
+                        return $end->greaterThan($start);
                     }
                     return true;
                 },
