@@ -1,88 +1,73 @@
 <?php
 /**
  * @var \App\View\AppView $this
- * @var object $doctor
+ * @var iterable $appointments
  * @var string $date
- * @var array $appointments
  */
+$this->assign('title', 'Daily Schedule - ' . $date);
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Daily Schedule - <?= h($date) ?></title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-        .info { margin-bottom: 20px; }
-        .schedule-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .schedule-table th, .schedule-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        .schedule-table th { background-color: #f8f9fa; font-weight: bold; }
-        .no-appointments { text-align: center; padding: 40px; color: #666; }
-        .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #666; }
-        @media print {
-            .no-print { display: none; }
-            body { margin: 0; }
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Daily Schedule</h1>
-        <h2><?= h($doctor->name ?? 'Doctor') ?></h2>
-        <?php if (isset($doctor->department->name)): ?>
-            <h3><?= h($doctor->department->name) ?> Department</h3>
-        <?php endif; ?>
+
+<style>
+    /* Print-specific overrides */
+    @media print {
+        .no-print { display: none !important; }
+        body { background: white !important; font-size: 12pt; }
+        .container { max-width: 100% !important; padding: 0; }
+        .card { border: none !important; box-shadow: none !important; }
+    }
+    .schedule-time { font-weight: bold; width: 100px; }
+</style>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div>
+            <h2 class="mb-0 text-primary">Daily Schedule</h2>
+            <p class="text-muted mb-0">Date: <strong><?= date('l, F j, Y', strtotime($date)) ?></strong></p>
+        </div>
+        <div class="no-print">
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="fas fa-print me-2"></i> Print
+            </button>
+            <?= $this->Html->link('Back', ['action' => 'index'], ['class' => 'btn btn-outline-secondary ms-2']) ?>
+        </div>
     </div>
 
-    <div class="info">
-        <p><strong>Date:</strong> <?= date('l, F j, Y', strtotime($date)) ?></p>
-        <p><strong>Total Appointments:</strong> <?= count($appointments) ?></p>
-        <p><strong>Generated:</strong> <?= date('Y-m-d H:i:s') ?></p>
-    </div>
-
-    <?php if (!empty($appointments)): ?>
-        <table class="schedule-table">
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>Patient Name</th>
-                    <th>Contact</th>
-                    <th>Status</th>
-                    <th>Notes</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($appointments as $appointment): ?>
-                <tr>
-                    <td><?= h($appointment->appointment_time->format('H:i')) ?></td>
-                    <td><?= h($appointment->patient->name ?? 'N/A') ?></td>
-                    <td><?= h($appointment->patient->contact_number ?? 'N/A') ?></td>
-                    <td><?= h($appointment->status ?? 'Scheduled') ?></td>
-                    <td><?= h($appointment->notes ?? '') ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+    <?php if (empty($appointments)): ?>
+        <div class="alert alert-info text-center">
+            No appointments scheduled for this date.
+        </div>
     <?php else: ?>
-        <div class="no-appointments">
-            <h3>No appointments scheduled for this date</h3>
-            <p>You have a free day!</p>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>Time</th>
+                        <th>Patient Name</th>
+                        <th>Doctor</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($appointments as $appt): ?>
+                    <tr>
+                        <td class="schedule-time"><?= h($appt->appointment_time->format('H:i')) ?></td>
+                        <td>
+                            <strong><?= h($appt->patient->name) ?></strong>
+                            <br>
+                            <small class="text-muted"><?= h($appt->patient->contact_number) ?></small>
+                        </td>
+                        <td>Dr. <?= h($appt->doctor->name) ?></td>
+                        <td><?= h($appt->status) ?></td>
+                        <td><?= h($appt->remarks) ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
     <?php endif; ?>
 
-    <div class="footer">
-        <p>Generated by OmniCare Hospital Management System</p>
-        <p>Printed on: <?= date('Y-m-d H:i:s') ?></p>
+    <div class="mt-5 pt-3 border-top text-muted small text-center">
+        Printed from OmniCare System
     </div>
-
-    <div class="no-print" style="margin-top: 20px; text-align: center;">
-        <button onclick="window.print()" class="btn btn-primary">Print Schedule</button>
-        <button onclick="window.close()" class="btn btn-secondary">Close</button>
-    </div>
-
-    <script>
-        // Auto-print when page loads (optional)
-        // window.onload = function() { window.print(); }
-    </script>
-</body>
-</html>
+</div>
