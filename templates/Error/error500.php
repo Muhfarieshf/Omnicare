@@ -1,38 +1,24 @@
 <?php
-/**
- * @var \App\View\AppView $this
- * @var \Cake\Database\StatementInterface $statement
- * @var string $url
- * @var string $message
- */
 $this->assign('title', 'System Error');
 ?>
-
-<div class="card shadow-lg border-0 rounded-3">
-    <div class="card-body p-5">
+<div class="d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <div class="glass-card text-center p-5" style="max-width: 500px;">
         <div class="mb-4 text-danger">
-            <i class="fas fa-bug" style="font-size: 64px;"></i>
+            <i class="fas fa-exclamation-circle" style="font-size: 64px;"></i>
         </div>
-        
-        <h1 class="display-6 fw-bold text-dark mb-3">Something Went Wrong</h1>
-        
-        <p class="lead text-muted mb-4">
-            We encountered an unexpected error. Our technical team has been notified. Please try again later.
+        <h1 class="h2 mb-3">System Error</h1>
+        <p class="text-muted mb-4">
+            Something went wrong on our end. Our technical team has been notified.
         </p>
-
-        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-            <?= $this->Html->link(
-                '<i class="fas fa-home me-2"></i> Back to Dashboard',
-                '/',
-                ['class' => 'btn btn-primary btn-lg px-4', 'escape' => false]
-            ) ?>
-        </div>
-        
-        <?php if (Configure::read('debug')): ?>
-            <div class="mt-4 text-start bg-light p-3 rounded border">
-                <strong>Debug Message:</strong><br>
-                <?= h($message) ?>
-            </div>
-        <?php endif; ?>
+        <?= $this->Html->link(
+            '<i class="fas fa-redo me-2"></i> Try Again',
+            'javascript:location.reload()',
+            ['class' => 'btn btn-outline-primary me-2', 'escape' => false]
+        ) ?>
+        <?= $this->Html->link(
+            'Go Home',
+            '/',
+            ['class' => 'btn btn-primary', 'escape' => false]
+        ) ?>
     </div>
 </div>

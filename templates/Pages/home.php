@@ -8,216 +8,227 @@ $user = $this->getRequest()->getAttribute('identity');
 ?>
 
 <style>
-/* Landing Page Specific Styles */
+/* Landing Page Specific Styles - Windows 11 Theme */
+.home-container {
+    padding-bottom: 60px;
+}
+
+/* Hero Section */
 .hero-section {
-    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%);
-    padding: 80px 20px;
-    border-radius: 24px;
-    margin: 20px 20px 60px 20px;
-    box-shadow: 0 8px 32px rgba(0, 102, 204, 0.1);
-    text-align: center;
     position: relative;
+    padding: 100px 20px 80px;
+    text-align: center;
     overflow: hidden;
 }
 
-.hero-content {
-    position: relative;
-    z-index: 2;
-    max-width: 800px;
+/* Background Blob Animation */
+.hero-bg-blob {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(0,120,212,0.15) 0%, rgba(0,120,212,0) 70%);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: -1;
+    animation: blobPulse 8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes blobPulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.5; }
+}
+
+.hero-card {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(40px) saturate(150%);
+    -webkit-backdrop-filter: blur(40px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    padding: 60px 40px;
+    max-width: 900px;
     margin: 0 auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
 }
 
 .hero-title {
     font-size: 3.5rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #0066cc, #004499);
+    font-weight: 700;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #0078d4, #005a9e);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    margin-bottom: 20px;
-    letter-spacing: -1px;
+    letter-spacing: -0.02em;
 }
 
 .hero-subtitle {
     font-size: 1.25rem;
-    color: #666;
+    color: #5d5d5d;
     margin-bottom: 40px;
-    line-height: 1.6;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Buttons */
+.btn-hero {
+    padding: 12px 32px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-hero-primary {
+    background: #0078d4;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 120, 212, 0.3);
+    border: 1px solid transparent;
+}
+
+.btn-hero-primary:hover {
+    background: #006cc1;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 120, 212, 0.4);
+    color: white;
+}
+
+.btn-hero-secondary {
+    background: rgba(255, 255, 255, 0.8);
+    color: #333;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.btn-hero-secondary:hover {
+    background: white;
+    border-color: #0078d4;
+    color: #0078d4;
+}
+
+/* Features Grid */
+.features-section {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .features-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    padding: 0 20px;
-    margin-bottom: 80px;
+    gap: 24px;
 }
 
 .feature-card {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 32px;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 12px;
+    padding: 32px;
+    transition: all 0.3s ease;
     text-align: left;
 }
 
 .feature-card:hover {
+    background: rgba(255, 255, 255, 0.8);
     transform: translateY(-5px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
 }
 
 .feature-icon {
-    width: 60px;
-    height: 60px;
+    width: 56px;
+    height: 56px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
     margin-bottom: 20px;
-    color: white;
 }
 
-.icon-schedule { background: linear-gradient(135deg, #0066cc, #004499); }
-.icon-doctors { background: linear-gradient(135deg, #22c55e, #16a34a); }
-.icon-records { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.icon-blue { background: #e0f2fe; color: #0078d4; }
+.icon-green { background: #dcfce7; color: #107c10; }
+.icon-purple { background: #f3e8ff; color: #7c3aed; }
 
 .feature-card h3 {
-    font-size: 1.5rem;
-    color: #1f1f1f;
-    margin-bottom: 12px;
+    font-size: 1.25rem;
     font-weight: 700;
+    margin-bottom: 10px;
+    color: #202020;
 }
 
 .feature-card p {
     color: #666;
-    font-size: 1rem;
+    margin: 0;
     line-height: 1.6;
-}
-
-.cta-section {
-    text-align: center;
-    padding: 80px 20px;
-    background: linear-gradient(135deg, #0066cc, #004499);
-    margin: 0 20px 20px 20px;
-    border-radius: 24px;
-    color: white;
-}
-
-.btn-hero {
-    padding: 15px 40px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    border-radius: 50px;
-    transition: all 0.3s ease;
-}
-
-.btn-hero-primary {
-    background: linear-gradient(135deg, #0066cc, #004499);
-    color: white;
-    box-shadow: 0 4px 15px rgba(0, 102, 204, 0.4);
-}
-
-.btn-hero-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 102, 204, 0.5);
-    color: white;
-}
-
-.btn-hero-white {
-    background: white;
-    color: #0066cc;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.btn-hero-white:hover {
-    transform: translateY(-2px);
-    background: #f8f9fa;
-    color: #004499;
-}
-
-@media (max-width: 768px) {
-    .hero-title { font-size: 2.5rem; }
-    .hero-section { margin: 10px; padding: 40px 20px; }
-    .cta-section { margin: 10px; }
 }
 </style>
 
-<div class="hero-section">
-    <div class="hero-content">
-        <h1 class="hero-title">Healthcare Simplified.</h1>
-        <p class="hero-subtitle">
-            Experience the future of hospital management. Book appointments, manage patient records, and streamline your clinic's workflow with OmniCare.
-        </p>
+<div class="home-container">
+    <div class="hero-section">
+        <div class="hero-bg-blob"></div>
         
-        <div class="d-flex gap-3 justify-content-center">
-            <?php if ($user): ?>
-                <?php
-                // Redirect to dashboard based on role
-                $dashboardUrl = ['controller' => 'Appointments', 'action' => 'dashboard'];
-                if ($user->role === 'doctor') $dashboardUrl = ['controller' => 'Doctors', 'action' => 'dashboard'];
-                if ($user->role === 'patient') $dashboardUrl = ['controller' => 'Patients', 'action' => 'dashboard'];
-                ?>
-                <?= $this->Html->link(
-                    'Go to Dashboard <i class="fas fa-arrow-right ms-2"></i>',
-                    $dashboardUrl,
-                    ['class' => 'btn btn-hero btn-hero-primary', 'escape' => false]
-                ) ?>
-            <?php else: ?>
-                <?= $this->Html->link(
-                    'Book Appointment',
-                    ['controller' => 'Users', 'action' => 'login'], // Redirects to login then booking
-                    ['class' => 'btn btn-hero btn-hero-primary']
-                ) ?>
-                <?= $this->Html->link(
-                    'Patient Portal',
-                    ['controller' => 'Users', 'action' => 'login'],
-                    ['class' => 'btn btn-hero btn-hero-white border']
-                ) ?>
-            <?php endif; ?>
+        <div class="hero-card">
+            <h1 class="hero-title">Healthcare, Reimagined.</h1>
+            <p class="hero-subtitle">
+                A unified platform for patients and doctors. Book appointments, manage schedules, and access records with the clarity of OmniCare.
+            </p>
+            
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <?php if ($user): ?>
+                    <?php
+                    // Smart Redirect based on Role
+                    $dashboardUrl = ['controller' => 'Appointments', 'action' => 'dashboard'];
+                    if ($user->role === 'doctor') $dashboardUrl = ['controller' => 'Doctors', 'action' => 'dashboard'];
+                    if ($user->role === 'patient') $dashboardUrl = ['controller' => 'Patients', 'action' => 'dashboard'];
+                    ?>
+                    <?= $this->Html->link(
+                        'Go to Dashboard',
+                        $dashboardUrl,
+                        ['class' => 'btn btn-hero btn-hero-primary text-decoration-none']
+                    ) ?>
+                <?php else: ?>
+                    <?= $this->Html->link(
+                        'Login',
+                        ['controller' => 'Users', 'action' => 'login'],
+                        ['class' => 'btn btn-hero btn-hero-primary text-decoration-none']
+                    ) ?>
+                    <?= $this->Html->link(
+                        'Create Account',
+                        ['controller' => 'Users', 'action' => 'register'],
+                        ['class' => 'btn btn-hero btn-hero-secondary text-decoration-none']
+                    ) ?>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="container-fluid" style="max-width: 1200px; margin: 0 auto;">
-    <div class="features-grid">
-        <div class="feature-card">
-            <div class="feature-icon icon-schedule">
-                <i class="fas fa-calendar-check"></i>
+    <div class="features-section">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon icon-blue">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <h3>Smart Scheduling</h3>
+                <p>View real-time availability and book appointments instantly. Our intelligent system prevents double-bookings automatically.</p>
             </div>
-            <h3>Smart Scheduling</h3>
-            <p>Book appointments effortlessly with our real-time availability checker. Never double-book again with intelligent conflict detection.</p>
-        </div>
 
-        <div class="feature-card">
-            <div class="feature-icon icon-doctors">
-                <i class="fas fa-user-md"></i>
+            <div class="feature-card">
+                <div class="feature-icon icon-green">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <h3>Top Specialists</h3>
+                <p>Browse detailed profiles of our doctors, filter by department, and find the perfect match for your healthcare needs.</p>
             </div>
-            <h3>Expert Doctors</h3>
-            <p>Access detailed profiles of our specialists. Find the right doctor for your needs by department, expertise, or availability.</p>
-        </div>
 
-        <div class="feature-card">
-            <div class="feature-icon icon-records">
-                <i class="fas fa-file-medical"></i>
+            <div class="feature-card">
+                <div class="feature-icon icon-purple">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <h3>Live Waiting List</h3>
+                <p>Can't find a slot? Join our smart waiting list and get prioritized when an appointment becomes available.</p>
             </div>
-            <h3>Digital Records</h3>
-            <p>Securely store and access patient history. Track appointment status from scheduled to completed in one unified timeline.</p>
         </div>
     </div>
-</div>
-
-<div class="cta-section">
-    <h2 class="mb-4 fw-bold">Ready to modernize your healthcare experience?</h2>
-    <p class="mb-5 opacity-75 fs-5">Join thousands of patients and doctors trusting OmniCare.</p>
-    
-    <?php if (!$user): ?>
-        <?= $this->Html->link(
-            'Create Free Account',
-            ['controller' => 'Users', 'action' => 'register'],
-            ['class' => 'btn btn-hero btn-hero-white']
-        ) ?>
-    <?php endif; ?>
 </div>

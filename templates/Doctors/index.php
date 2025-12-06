@@ -51,7 +51,7 @@
                             <td><?= $this->Number->format($doctor->id) ?></td>
                             <td>
                                 <div style="font-weight: 600; color: #2c3e50;">
-                                    Dr. <?= h($doctor->name) ?>
+                                    <?= h($doctor->name) ?>
                                 </div>
                             </td>
                             <td>
