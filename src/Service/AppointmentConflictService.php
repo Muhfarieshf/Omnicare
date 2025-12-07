@@ -91,8 +91,8 @@ class AppointmentConflictService
      */
     protected function validateDoctorSchedule(int $doctorId, \Cake\I18n\Date $date, $time, int $duration): array
     {
-        $dayOfWeek = $date->format('w'); // 0 (Sunday) to 6 (Saturday)
-
+        $dayOfWeek = (int)$date->format('w'); // 0 (Sunday) to 6 (Saturday)
+        
         $schedule = $this->doctorSchedulesTable->find()
             ->where([
                 'doctor_id' => $doctorId,
@@ -100,33 +100,28 @@ class AppointmentConflictService
             ])
             ->first();
 
-        // Case 1: No schedule defined for this day
+        // CHANGE: If NO schedule record exists, we now assume Dr. is AVAILABLE by default
         if (!$schedule) {
-            return [
-                'available' => false,
-                'conflicts' => [],
-                'message' => 'Doctor is not working on this day.'
-            ];
+            return ['available' => true];
         }
 
-        // Case 2: Schedule exists but marked as Unavailable
+        // Case 1: Record exists and is explicitly marked as "Unavailable"
         if (!$schedule->is_available) {
             return [
                 'available' => false,
                 'conflicts' => [],
-                'message' => 'Doctor has marked this day as unavailable.'
+                'message' => 'Doctor has explicitly marked this day as unavailable.'
             ];
         }
 
-        // Case 3: Check Time Range
+        // Case 2: Record exists (Available), but check if appointment is within the specific shift hours
         $reqTime = ($time instanceof \Cake\I18n\Time) ? $time : new \Cake\I18n\Time($time);
         $reqEndTime = $reqTime->addMinutes($duration);
 
         $shiftStart = $schedule->start_time;
         $shiftEnd = $schedule->end_time;
 
-        // Check if appointment starts before shift or ends after shift
-        // Note: Using greaterThan/lessThan for strict comparison
+        // Check if current request fits inside the defined shift
         if ($reqTime->format('H:i:s') < $shiftStart->format('H:i:s') || 
             $reqEndTime->format('H:i:s') > $shiftEnd->format('H:i:s')) {
             
@@ -134,7 +129,7 @@ class AppointmentConflictService
                 'available' => false,
                 'conflicts' => [],
                 'message' => sprintf(
-                    'Appointment is outside working hours (%s - %s).',
+                    'Appointment is outside working hours (%s - %s) defined for this day.',
                     $shiftStart->format('h:i A'),
                     $shiftEnd->format('h:i A')
                 )
@@ -143,7 +138,7 @@ class AppointmentConflictService
 
         return ['available' => true];
     }
-
+    
     /**
      * Check if patient is available at the requested time
      */

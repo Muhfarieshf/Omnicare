@@ -58,16 +58,23 @@ class SmartSchedulingService
 
         // Get doctor's schedule for this day of week
         $dayOfWeek = (int)$date->format('w'); // 0 = Sunday, 6 = Saturday
+        
         $schedule = $this->doctorSchedulesTable->find()
             ->where([
                 'doctor_id' => $doctorId,
-                'day_of_week' => $dayOfWeek,
-                'is_available' => true
+                'day_of_week' => $dayOfWeek
             ])
             ->first();
 
+        // NEW LOGIC: Default to 08:00 AM - 05:00 PM if no record exists
         if (!$schedule) {
-            return []; // Doctor not available on this day
+            $shiftStart = '08:00:00';
+            $shiftEnd = '17:00:00';
+        } else if (!$schedule->is_available) {
+            return []; // Explicitly blocked
+        } else {
+            $shiftStart = $schedule->start_time->format('H:i:s');
+            $shiftEnd = $schedule->end_time->format('H:i:s');
         }
 
         // Get existing appointments for this doctor on this date
@@ -81,8 +88,8 @@ class SmartSchedulingService
 
         // Generate time slots
         $availableSlots = [];
-        $startTime = Time::createFromFormat('H:i:s', $schedule->start_time->format('H:i:s'));
-        $endTime = Time::createFromFormat('H:i:s', $schedule->end_time->format('H:i:s'));
+        $startTime = Time::createFromFormat('H:i:s', $shiftStart);
+        $endTime = Time::createFromFormat('H:i:s', $shiftEnd);
 
         $currentTime = $startTime->copy();
         $now = Time::now();
@@ -425,7 +432,3 @@ class SmartSchedulingService
         return $start1->lt($end2) && $start2->lt($end1);
     }
 }
-
-
-
-
