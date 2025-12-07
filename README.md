@@ -1,129 +1,131 @@
-# OmniCare – Hospital Appointment Booking System
+# OmniCare – Modern Hospital Appointment System
 
-OmniCare is a hospital appointment booking system built with CakePHP 5.x. It provides a modern, corporate, and responsive web interface for managing hospital appointments, patients, doctors, and departments.
+OmniCare is a robust, enterprise-grade hospital appointment booking system built with **CakePHP 5.x**. It features a state-of-the-art **Glassmorphism UI** (inspired by Windows 11), a smart conflict detection engine, and comprehensive workflow management for patients, doctors, and administrators.
 
-## Key Features
+## 🚀 Key Features
 
--   **User Roles:** Admin, Doctor, Patient (with access control and restrictions)
--   **Authentication & Authorization:** Secure login, registration, and role-based access
--   **Appointment Management:** Book, view, edit, and cancel appointments
--   **Dashboards:** Custom dashboards for Admins, Doctors, and Patients
--   **Patient & Doctor Management:** CRUD operations for patients and doctors
--   **Department Management:** Organize doctors by departments
--   **Role-Based Search:** Powerful, role-aware search for patients, doctors, appointments, and more. Includes a main search widget and a topbar quick search with AJAX dropdown results.
--   **Reports:** Generate and print appointment and patient reports. Includes monthly, daily, and doctor-specific report templates for admins and doctors.
--   **Flash Messaging:** User feedback for actions (success, error, etc.)
--   **Responsive UI:** Bootstrap-based, clean, and professional design
+### 📅 Advanced Appointment Management
 
-## Architecture
+-   **Smart Booking:** Real-time slot availability checking via AJAX.
+-   **Conflict Detection:** Prevents double-booking by analyzing doctor schedules and existing appointments.
+-   **Flexible Duration:** Support for variable appointment lengths (15 to 480 minutes).
+-   **Status Workflow:** robust state machine handling transitions (_Scheduled → Confirmed → In Progress → Completed_).
+-   **Cancellation Logic:**
+    -   Patients can "Withdraw" pending requests instantly.
+    -   Confirmed appointments require Doctor/Admin approval for cancellation.
+    -   Doctors can decline or cancel appointments directly with reason tracking.
 
--   **Backend:** CakePHP 5.x MVC framework (PHP 8+)
--   **Frontend:** Bootstrap 5, FontAwesome, custom CSS
--   **Database:** MySQL (see `hospital_appointment_system.sql` for schema)
--   **Testing:** PHPUnit, CakePHP test suite
+### 👨‍⚕️ Doctor Schedule & Availability
 
-## Setup & Installation
+-   **Opt-Out Logic:** Doctors are available M-F, 9-5 by default.
+-   **Schedule Management:** Doctors can override default hours or mark specific days as "Unavailable" (Off-duty).
+-   **Department Filtering:** Patients can find doctors by department with bi-directional filtering.
 
-1. Clone the repository and install dependencies:
-    ```bash
-    composer install
-    ```
-2. Configure your database in `config/app_local.php`.
-3. Import the schema from `hospital_appointment_system.sql`.
-4. Start the server:
-    ```bash
-    bin/cake server -p 8765
-    ```
-5. Visit [http://localhost:8765](http://localhost:8765) in your browser.
+### ⏳ Smart Waiting List
 
-## Installation (OmniCare)
+-   **Auto-Prompt:** Automatically offers the "Join Waiting List" option when a preferred slot is unavailable.
+-   **Priority System:** High/Normal/Low priority queuing for critical cases.
+-   **Management:** Doctors can view patients waiting specifically for their department.
 
-1. **Clone the repository:**
-    ```bash
-    git clone https://github.com/Muhfarieshf/Omnicare.git
-    cd Omnicare
-    ```
-2. **Install PHP dependencies:**
-    ```bash
-    composer install
-    ```
-3. **Configure your environment:**
-    - Copy `config/app_local.example.php` to `config/app_local.php`.
-    - Edit `config/app_local.php` and set your database credentials and other settings.
-4. **Import the database schema:**
-    - Create a MySQL database (e.g., `hospital_appointment_system`).
-    - Import `hospital_appointment_system.sql` into your database.
-5. **Start the CakePHP server:**
-    ```bash
-    bin/cake server -p 8765
-    ```
-6. **Access the app:**
-    - Open [http://localhost:8765](http://localhost:8765) in your browser.
+### 🎨 Modern UI/UX (Glassmorphism)
 
-> For more details, see the CakePHP documentation below.
+-   **Windows 11 Theme:** "Mica" design language with acrylic blur effects, soft shadows, and rounded corners.
+-   **Role-Based Dashboards:**
+    -   **Admin:** System-wide stats, user management, and reporting.
+    -   **Doctor:** Today's schedule, upcoming appointments, and quick actions.
+    -   **Patient:** My appointments, history, and profile management.
+-   **Responsive:** Fully optimized for mobile, tablet, and desktop views.
 
-## Usage
+### 📊 Reporting & Search
 
--   **Login/Register:** Patients can register; Admins/Doctors are created by admin.
-
-### Demo Login Accounts
-
-| Role    | Username   | Password  |
-|---------|------------|-----------|
-| Admin   | admin      | password  |
-| Doctor  | dr_ahmad   | password  |
-| Patient | john_smith | password  |
-
--   **Book Appointments:** Patients can book with available doctors.
--   **Manage Data:** Admins manage users, doctors, departments, and appointments.
--   **Dashboards:** Each role sees relevant stats and quick actions.
--   **Reports:** Admins and doctors can generate printable reports, including:
-    - Monthly appointment reports
-    - Daily schedule printouts
-    - Doctor-specific patient lists
-  Access these from the Reports section in the navigation bar.
-
--   **Search:**
-    - Use the main search bar (on dashboard/content pages) to search for patients, doctors, appointments, and departments.
-    - The topbar quick search (always visible) provides instant AJAX-powered results as you type.
-    - Search results are filtered based on your role (admin, doctor, patient) and permissions.
-    - Click results to view details or take action.
-
-## Access & Restrictions
-
--   **Patients:** Can only view and manage their own data/appointments.
--   **Doctors:** Can only view their own schedule and patients.
--   **Admins:** Full access to all features and data.
-
-## Dependencies
-
--   CakePHP 5.x
--   Bootstrap 5
--   FontAwesome
--   MySQL
-
-## New Features
-
-### Role-Based Search
-
-OmniCare now includes a robust, role-aware search system:
-
-- **Main Search Widget:**
-  - Located on key dashboard and content pages.
-  - Lets you search for patients, doctors, appointments, and departments.
-  - Results are filtered by your user role and permissions.
-
-- **Topbar Quick Search:**
-  - Always visible in the top navigation bar.
-  - AJAX-powered: see instant results in a dropdown as you type.
-  - Click a result to jump directly to the relevant record or page.
-
-### Reporting Templates
-
-- **Monthly Report:** View and print monthly appointment statistics.
-- **Daily Schedule Print:** Print a daily schedule for doctors or departments.
-- **Doctor Index:** Doctors can view and print their patient lists.
-
-All report templates are accessible from the Reports menu. Reports are printable and styled for clarity.
+-   **Search Widget:** Global search for patients, doctors, and appointments.
+-   **Reports:** Generate monthly appointment summaries and printable daily schedules.
 
 ---
+
+## 🛠 Technology Stack
+
+-   **Framework:** CakePHP 5.x (PHP 8.1+)
+-   **Database:** MySQL
+-   **Frontend:** Bootstrap 5, Custom CSS (Glassmorphism/Acrylic)
+-   **Icons:** FontAwesome 6
+-   **Scripting:** JavaScript (Vanilla + AJAX)
+
+---
+
+## ⚙️ Installation
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone [https://github.com/Muhfarieshf/Omnicare.git](https://github.com/Muhfarieshf/Omnicare.git)
+    cd Omnicare
+    ```
+
+2.  **Install dependencies:**
+
+    ```bash
+    composer install
+    ```
+
+3.  **Database Setup:**
+
+    -   Create a MySQL database (e.g., `hospital_appointment_system`).
+    -   Import the provided schema: `hospital_appointment_system.sql`.
+    -   Configure your database credentials in `config/app_local.php`.
+
+4.  **Start the Server:**
+
+    ```bash
+    bin/cake server -p 8765
+    ```
+
+5.  **Access the Application:**
+    Open [http://localhost:8765](http://localhost:8765) in your browser.
+
+---
+
+## 👥 User Roles & Demo Credentials
+
+| Role        | Username     | Password   | Access Level                                       |
+| :---------- | :----------- | :--------- | :------------------------------------------------- |
+| **Admin**   | `admin`      | `password` | Full system access, User/Dept management           |
+| **Doctor**  | `dr_ahmad`   | `password` | Schedule management, Patient records, Appointments |
+| **Patient** | `john_smith` | `password` | Book appointments, View history, Join waiting list |
+
+---
+
+## 📖 Usage Guide
+
+### For Patients
+
+1.  **Register/Login** to access your dashboard.
+2.  Click **"Book Appointment"** to find a doctor.
+3.  If your preferred time is full, click **"Join Waiting List"** to be queued.
+4.  View your appointment status in **"My Appointments"**.
+
+### For Doctors
+
+1.  **Login** to view your "Today's Schedule" on the dashboard.
+2.  Go to **"My Schedule"** to set your working hours or mark days off.
+3.  Go to **"Waiting List"** to see patients queuing for your department.
+4.  Use the **"View"** action on appointments to Confirm, Start, or Complete them.
+
+### For Admins
+
+1.  Manage **Users**, **Doctors**, and **Departments** via the sidebar.
+2.  Generate reports from the **Reports** section.
+3.  Oversee the entire **Waiting List** and **Appointment** flow.
+
+---
+
+## 📂 Project Structure
+
+-   `src/Controller`: Handles request logic (Appointments, Doctors, WaitingList, etc.).
+-   `src/Service`: Contains business logic (Conflict Detection, Smart Scheduling, Workflow).
+-   `templates`: View files (Standardized with `modern-dashboard.css`).
+-   `webroot/css`: Contains the global theme (`modern-dashboard.css`).
+
+---
+
+&copy; 2025 OmniCare Hospital Management System.
