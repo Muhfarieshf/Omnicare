@@ -29,7 +29,7 @@ OmniCare is a robust, enterprise-grade hospital appointment booking system built
 
 ### 🎨 Modern UI/UX (Glassmorphism)
 
--   **Windows 11 Theme:** "Mica" design language with acrylic blur effects, soft shadows, and rounded corners.
+-   **Modern Theme:** "Mica" design language with acrylic blur effects, soft shadows, and rounded corners.
 -   **Role-Based Dashboards:**
     -   **Admin:** System-wide stats, user management, and reporting.
     -   **Doctor:** Today's schedule, upcoming appointments, and quick actions.
