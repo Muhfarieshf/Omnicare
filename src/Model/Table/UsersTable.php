@@ -19,27 +19,36 @@ class UsersTable extends Table
             'foreignKey' => 'patient_id',
             'joinType' => 'LEFT',
         ]);
-        
+
         $this->belongsTo('Doctors', [
-            'foreignKey' => 'doctor_id', 
+            'foreignKey' => 'doctor_id',
             'joinType' => 'LEFT',
         ]);
-        
+
         $this->hasMany('CancelledAppointments', [
             'className' => 'Appointments',
             'foreignKey' => 'cancelled_by',
             'dependent' => false,
         ]);
-        
+
         $this->hasMany('ApprovedAppointments', [
             'className' => 'Appointments',
             'foreignKey' => 'approved_by',
             'dependent' => false,
         ]);
-        
+
         $this->hasMany('AppointmentStatusHistory', [
             'foreignKey' => 'changed_by',
             'dependent' => false,
+        ]);
+
+        $this->addBehavior('Timestamp', [
+            'events' => [
+                'Model.beforeSave' => [
+                    'created_at' => 'new',
+                    'updated_at' => 'always',
+                ]
+            ]
         ]);
     }
 
@@ -88,13 +97,13 @@ class UsersTable extends Table
     public function validationRegister(Validator $validator): Validator
     {
         $validator = $this->validationDefault($validator);
-        
+
         $validator
             ->add('confirm_password', 'compareWith', [
                 'rule' => ['compareWith', 'password'],
                 'message' => 'Passwords do not match'
             ]);
-            
+
         return $validator;
     }
 }

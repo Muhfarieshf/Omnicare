@@ -1,152 +1,124 @@
 <?php
 // templates/element/topbar_home.php
+$controller = $this->getRequest()->getParam('controller');
+$action = $this->getRequest()->getParam('action');
+$pass = $this->getRequest()->getParam('pass');
+$currentSlug = $pass[0] ?? '';
+
+$isActive = function ($ctrl, $act = null, $slug = null) use ($controller, $action, $currentSlug) {
+    if ($controller !== $ctrl)
+        return '';
+    if ($act && $action !== $act)
+        return '';
+    if ($slug && $currentSlug !== $slug)
+        return '';
+    return 'active fw-bold text-primary';
+};
 ?>
-<style>
-/* TOPBAR STYLES - Higher specificity to override conflicts */
-.topbar {
-    height: 56px !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 1050 !important;
-    background: rgba(255, 255, 255, 0.95) !important;
-    backdrop-filter: blur(20px) !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-}
+<nav class="navbar navbar-expand-lg navbar-light fixed-top bg-white bg-opacity-95 shadow-sm backdrop-blur"
+    style="height: 80px; transition: all 0.3s;">
+    <div class="container">
+        <!-- Brand -->
+        <?= $this->Html->link(
+            '<div class="bg-primary bg-opacity-10 p-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;"><i class="fas fa-hospital text-primary"></i></div><span class="fw-bold fs-4 text-dark ls-1">OmniCare</span>',
+            '/',
+            ['class' => 'navbar-brand d-flex align-items-center gap-2', 'escape' => false]
+        ) ?>
 
-.topbar-container {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 0 24px !important;
-    height: 100% !important;
-    max-width: 1680px !important;
-    margin: 0 auto !important;
-    width: 100% !important;
-}
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-/* LEFT SIDE - Logo (Force left alignment) */
-.topbar-logo {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    flex: 0 0 auto !important;
-    order: 1 !important;
-}
+        <!-- Menu Content -->
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <!-- Centered Links -->
+            <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-4">
+                <li class="nav-item">
+                    <?= $this->Html->link('Home', '/', ['class' => 'nav-link ' . ($controller === 'Pages' && $action === 'home' ? 'active fw-bold text-primary' : '')]) ?>
+                </li>
+                <li class="nav-item">
+                    <?= $this->Html->link('About Us', ['controller' => 'Pages', 'action' => 'display', 'about'], ['class' => 'nav-link ' . ($currentSlug === 'about' ? 'active fw-bold text-primary' : '')]) ?>
+                </li>
+                <li class="nav-item">
+                    <?= $this->Html->link('Services', ['controller' => 'Pages', 'action' => 'display', 'services'], ['class' => 'nav-link ' . ($currentSlug === 'services' ? 'active fw-bold text-primary' : '')]) ?>
+                </li>
+                <li class="nav-item">
+                    <?= $this->Html->link('Our Doctors', ['controller' => 'Pages', 'action' => 'doctors'], ['class' => 'nav-link ' . ($action === 'doctors' ? 'active fw-bold text-primary' : '')]) ?>
+                </li>
+                <li class="nav-item">
+                    <?= $this->Html->link('Contact', ['controller' => 'Pages', 'action' => 'display', 'contact'], ['class' => 'nav-link ' . ($currentSlug === 'contact' ? 'active fw-bold text-primary' : '')]) ?>
+                </li>
+            </ul>
 
-.topbar-logo a {
-    text-decoration: none !important;
-    color: #0066cc !important;
-    font-weight: 600 !important;
-    font-size: 18px !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    transition: color 0.2s ease !important;
-    white-space: nowrap !important;
-}
-
-
-
-/* RIGHT SIDE - Actions (Force right alignment) */
-.topbar-actions {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-    gap: 12px !important;
-    flex: 0 0 auto !important;
-    order: 2 !important;
-    margin-left: auto !important;
-}
-
-.topbar-btn {
-    padding: 8px 16px !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    border-radius: 6px !important;
-    text-decoration: none !important;
-    transition: all 0.2s ease !important;
-    font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    white-space: nowrap !important;
-    border: 1px solid transparent !important;
-}
-
-.topbar-btn-outline {
-    background: transparent !important;
-    color: #0066cc !important;
-    border: 1px solid #0066cc !important;
-}
-
-.topbar-btn-outline:hover {
-    background: #0066cc !important;
-    color: white !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 2px 8px rgba(0, 102, 204, 0.2) !important;
-    text-decoration: none !important;
-}
-
-.topbar-btn-primary {
-    background: #0066cc !important;
-    color: white !important;
-    border: 1px solid #0066cc !important;
-    box-shadow: 0 1px 3px rgba(0, 102, 204, 0.2) !important;
-}
-
-.topbar-btn-primary:hover {
-    background: #0052a3 !important;
-    border-color: #0052a3 !important;
-    color: white !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3) !important;
-    text-decoration: none !important;
-}
-
-/* Responsive design */
-@media (max-width: 480px) {
-    .topbar-container {
-        padding: 0 16px !important;
-    }
-    
-    .topbar-logo a {
-        font-size: 16px !important;
-    }
-    
-    .topbar-btn {
-        padding: 6px 12px !important;
-        font-size: 13px !important;
-    }
-    
-    .topbar-actions {
-        gap: 8px !important;
-    }
-}
-</style>
-
-<div class="topbar">
-    <div class="topbar-container">
-        <div class="topbar-logo">
-            <?= $this->Html->link(
-                '<i class="fas fa-hospital"></i><span>OmniCare</span>',
-                ['controller' => 'Pages', 'action' => 'home'],
-                ['escape' => false]
-            ) ?>
-        </div>
-        <div class="topbar-actions">
-            <?= $this->Html->link(
-                '<i class="fas fa-sign-in-alt"></i> Login', 
-                ['controller' => 'Users', 'action' => 'login'], 
-                ['class' => 'topbar-btn topbar-btn-outline', 'escape' => false]
-            ) ?>
-            <?= $this->Html->link(
-                '<i class="fas fa-user-plus"></i> Register', 
-                ['controller' => 'Users', 'action' => 'register'], 
-                ['class' => 'topbar-btn topbar-btn-primary', 'escape' => false]
-            ) ?>
+            <!-- Right Actions -->
+            <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
+                <?php if ($this->getRequest()->getAttribute('identity')): ?>
+                    <?= $this->Html->link(
+                        '<i class="fas fa-columns me-2"></i>Dashboard',
+                        '/users/dashboard',
+                        ['class' => 'btn btn-outline-primary rounded-pill px-4 fw-bold', 'escape' => false]
+                    ) ?>
+                <?php else: ?>
+                    <?= $this->Html->link(
+                        'Login',
+                        ['controller' => 'Users', 'action' => 'login'],
+                        ['class' => 'text-decoration-none fw-bold text-dark hover-primary me-2']
+                    ) ?>
+                    <?= $this->Html->link(
+                        'Book Now',
+                        ['controller' => 'Appointments', 'action' => 'add'],
+                        ['class' => 'btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm hover-lift']
+                    ) ?>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
-</div>
+</nav>
+
+<style>
+    .backdrop-blur {
+        backdrop-filter: blur(10px);
+    }
+
+    .nav-link {
+        color: #555;
+        font-weight: 500;
+        font-size: 0.95rem;
+        position: relative;
+    }
+
+    .nav-link:hover {
+        color: #0078d4;
+    }
+
+    .nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 2px;
+        background-color: #0078d4;
+        transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after {
+        width: 100%;
+    }
+
+    .hover-primary:hover {
+        color: #0078d4 !important;
+    }
+
+    .hover-lift {
+        transition: transform 0.2s;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-2px);
+    }
+</style>

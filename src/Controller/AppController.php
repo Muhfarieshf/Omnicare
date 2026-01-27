@@ -13,17 +13,17 @@ class AppController extends Controller
 
         $this->loadComponent('Flash');
         $this->loadComponent('Authentication.Authentication');
-        
-       
+
+
         $this->loadComponent('Authorization.Authorization');
     }
 
     public function beforeFilter(EventInterface $event)
     {
         parent::beforeFilter($event);
-        
+
         // Configure the login and logout actions to not require authentication
-        $this->Authentication->addUnauthenticatedActions(['login', 'logout', 'testAuth', 'clearSession', 'testRedirect', 'debugDoctor', 'home']);
+        $this->Authentication->addUnauthenticatedActions(['login', 'logout', 'home', 'display', 'services', 'doctors', 'contact']);
 
         // Fix for session/cookie issues after logout: clear identity and session fully
         if ($this->request->getParam('action') === 'logout') {
@@ -35,11 +35,11 @@ class AppController extends Controller
                 setcookie('CookieAuth', '', time() - 3600, '/');
             }
         }
-        
+
         // Set user identity for views
         if ($identity = $this->Authentication->getIdentity()) {
             $this->set('currentUser', $identity);
-            
+
         }
     }
 
@@ -115,11 +115,11 @@ class AppController extends Controller
     public function dashboard()
     {
         $user = $this->Authentication->getIdentity();
-        
+
         if (!$user) {
             return $this->redirect(['controller' => 'Users', 'action' => 'login']);
         }
-        
+
         switch ($user->role) {
             case 'admin':
                 return $this->redirect(['controller' => 'Appointments', 'action' => 'dashboard']);

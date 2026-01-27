@@ -41,6 +41,12 @@ OmniCare is a robust, enterprise-grade hospital appointment booking system built
 -   **Search Widget:** Global search for patients, doctors, and appointments.
 -   **Reports:** Generate monthly appointment summaries and printable daily schedules.
 
+### 📧 Contact Form
+
+-   **Public Access:** Contact form available without login for inquiries.
+-   **Email Integration:** Messages sent directly to support@omnicare.com.
+-   **Reply-To Support:** Sender's email set as reply-to for easy responses.
+
 ---
 
 ## 🛠 Technology Stack

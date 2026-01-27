@@ -1,95 +1,81 @@
-<?php
-// ===== MODERN FOOTER ELEMENT =====
-// File: templates/element/footer.php
-?>
+<footer class="bg-white border-top py-5 mt-auto">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <?= $this->Html->link(
+                    '<div class="rounded-circle bg-primary bg-opacity-10 p-2 me-2"><i class="fas fa-hospital text-primary fa-lg"></i></div><span class="fs-4 fw-bold text-primary">OmniCare</span>',
+                    '/',
+                    ['class' => 'd-flex align-items-center mb-3 text-dark text-decoration-none', 'escape' => false]
+                ) ?>
+                <p class="text-muted small">
+                    Providing advanced healthcare solutions with a patient-centric approach. Your health is our
+                    priority.
+                </p>
+                <div class="d-flex gap-3 mt-3">
+                    <a href="#" class="text-secondary hover-primary"><i class="fab fa-twitter fa-lg"></i></a>
+                    <a href="#" class="text-secondary hover-primary"><i class="fab fa-facebook fa-lg"></i></a>
+                    <a href="#" class="text-secondary hover-primary"><i class="fab fa-instagram fa-lg"></i></a>
+                    <a href="#" class="text-secondary hover-primary"><i class="fab fa-linkedin fa-lg"></i></a>
+                </div>
+            </div>
 
-<style>
-.modern-footer {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-    padding: 24px 0;
-    margin-top: auto;
-    font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
-}
+            <div class="col-6 col-lg-2">
+                <h6 class="fw-bold mb-3">Links</h6>
+                <ul class="list-unstyled small">
+                    <li class="mb-2">
+                        <?= $this->Html->link('Home', '/', ['class' => 'text-decoration-none text-muted hover-dark']) ?>
+                    </li>
+                    <li class="mb-2">
+                        <?= $this->Html->link('About Us', ['controller' => 'Pages', 'action' => 'display', 'about'], ['class' => 'text-decoration-none text-muted hover-dark']) ?>
+                    </li>
+                    <li class="mb-2">
+                        <?= $this->Html->link('Services', ['controller' => 'Pages', 'action' => 'display', 'services'], ['class' => 'text-decoration-none text-muted hover-dark']) ?>
+                    </li>
+                    <li class="mb-2">
+                        <?= $this->Html->link('Contact', ['controller' => 'Pages', 'action' => 'display', 'contact'], ['class' => 'text-decoration-none text-muted hover-dark']) ?>
+                    </li>
+                </ul>
+            </div>
 
-.footer-container {
-    max-width: 1680px;
-    margin: 0 auto;
-    padding: 0 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-}
+            <div class="col-6 col-lg-2">
+                <h6 class="fw-bold mb-3">Services</h6>
+                <ul class="list-unstyled small">
+                    <li class="mb-2">
+                        <?= $this->Html->link('General Care', ['controller' => 'Pages', 'action' => 'display', 'services'], ['class' => 'text-decoration-none text-muted hover-dark']) ?>
+                    </li>
+                    <li class="mb-2">
+                        <?= $this->Html->link('Pediatrics', ['controller' => 'Pages', 'action' => 'display', 'services'], ['class' => 'text-decoration-none text-muted hover-dark']) ?>
+                    </li>
+                    <li class="mb-2">
+                        <?= $this->Html->link('Cardiology', ['controller' => 'Pages', 'action' => 'display', 'services'], ['class' => 'text-decoration-none text-muted hover-dark']) ?>
+                    </li>
+                    <li class="mb-2">
+                        <?= $this->Html->link('Emergency', ['controller' => 'Pages', 'action' => 'display', 'contact'], ['class' => 'text-decoration-none text-muted hover-dark']) ?>
+                    </li>
+                </ul>
+            </div>
 
-.footer-logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #0066cc;
-    font-weight: 600;
-    font-size: 16px;
-}
-
-.footer-logo i {
-    font-size: 18px;
-}
-
-.footer-links {
-    display: flex;
-    gap: 24px;
-    align-items: center;
-}
-
-.footer-links a {
-    color: #666;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: color 0.2s ease;
-}
-
-.footer-links a:hover {
-    color: #0066cc;
-}
-
-.footer-copy {
-    color: #999;
-    font-size: 13px;
-}
-
-@media (max-width: 768px) {
-    .footer-container {
-        flex-direction: column;
-        text-align: center;
-        padding: 0 16px;
-    }
-    
-    .footer-links {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-}
-</style>
-
-<footer class="modern-footer">
-    <div class="footer-container">
-        <div class="footer-logo">
-            <i class="fas fa-hospital"></i>
-            <span>OmniCare</span>
+            <div class="col-lg-4">
+                <h6 class="fw-bold mb-3">Newsletter</h6>
+                <p class="small text-muted">Subscribe to our newsletter for health tips and updates.</p>
+                <form class="d-flex gap-2">
+                    <input type="email" class="form-control form-control-sm" placeholder="Email address">
+                    <button class="btn btn-primary btn-sm" type="button">Subscribe</button>
+                </form>
+            </div>
         </div>
-        
-        <div class="footer-links">
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
-            <a href="#">Contact</a>
-            <a href="#">Help</a>
-        </div>
-        
-        <div class="footer-copy">
-            &copy; <?= date('Y') ?> OmniCare. All rights reserved.
+        <div class="border-top pt-4 mt-4 text-center small text-muted">
+            <p class="mb-0">&copy; <?= date('Y') ?> OmniCare Health System. All rights reserved.</p>
         </div>
     </div>
 </footer>
+
+<style>
+    .hover-primary:hover {
+        color: #0078d4 !important;
+    }
+
+    .hover-dark:hover {
+        color: #000 !important;
+    }
+</style>

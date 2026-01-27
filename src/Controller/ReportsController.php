@@ -9,7 +9,7 @@ class ReportsController extends AppController
     public function index()
     {
         $currentUser = $this->Authentication->getIdentity();
-        
+
         // Role-specific reports
         if ($currentUser->role === 'doctor') {
             return $this->doctorReports();
@@ -18,7 +18,7 @@ class ReportsController extends AppController
         } elseif ($currentUser->role === 'patient') {
             return $this->patientReports();
         }
-        
+
         $this->Flash->error(__('No reports available for your role.'));
         return $this->redirect(['controller' => 'Users', 'action' => 'logout']);
     }
@@ -28,7 +28,7 @@ class ReportsController extends AppController
         // Find the current doctor
         $doctorUsername = $this->Authentication->getIdentity()->username;
         $doctorName = $this->_convertUsernameToName($doctorUsername);
-        
+
         $doctorsTable = $this->getTableLocator()->get('Doctors');
         $doctor = $doctorsTable->find()
             ->contain(['Departments'])
@@ -42,12 +42,12 @@ class ReportsController extends AppController
 
         if (!$doctor) {
             $this->Flash->warning(__('Doctor profile not found. Showing limited reports.'));
-            $doctor = (object)['id' => null, 'name' => $doctorName];
+            $doctor = (object) ['id' => null, 'name' => $doctorName];
         }
 
         // Generate report data
         $reportData = $this->generateDoctorReportData($doctor);
-        
+
         $this->set(compact('doctor', 'reportData'));
         $this->render('doctor_index');
     }
@@ -55,7 +55,7 @@ class ReportsController extends AppController
     private function generateDoctorReportData($doctor)
     {
         $appointmentsTable = $this->getTableLocator()->get('Appointments');
-        
+
         if (!$doctor->id) {
             return [
                 'todayCount' => 0,
@@ -89,7 +89,7 @@ class ReportsController extends AppController
         // This month's appointments by status
         $monthStart = date('Y-m-01');
         $monthEnd = date('Y-m-t');
-        
+
         $monthCount = $appointmentsTable->find()
             ->where([
                 'doctor_id' => $doctor->id,
@@ -137,9 +137,14 @@ class ReportsController extends AppController
             ->toArray();
 
         return compact(
-            'todayCount', 'weekCount', 'monthCount', 
-            'completedMonth', 'noShowMonth', 'cancelledMonth',
-            'totalPatients', 'recentAppointments'
+            'todayCount',
+            'weekCount',
+            'monthCount',
+            'completedMonth',
+            'noShowMonth',
+            'cancelledMonth',
+            'totalPatients',
+            'recentAppointments'
         );
     }
 
@@ -147,11 +152,11 @@ class ReportsController extends AppController
     {
         $date = $date ?: date('Y-m-d');
         $currentUser = $this->Authentication->getIdentity();
-        
+
         // Find doctor
         $doctorUsername = $currentUser->username;
         $doctorName = $this->_convertUsernameToName($doctorUsername);
-        
+
         $doctorsTable = $this->getTableLocator()->get('Doctors');
         $doctor = $doctorsTable->find()
             ->contain(['Departments'])
@@ -181,11 +186,11 @@ class ReportsController extends AppController
     public function exportPatients()
     {
         $currentUser = $this->Authentication->getIdentity();
-        
+
         // Find doctor
         $doctorUsername = $currentUser->username;
         $doctorName = $this->_convertUsernameToName($doctorUsername);
-        
+
         $doctorsTable = $this->getTableLocator()->get('Doctors');
         $doctor = $doctorsTable->find()
             ->where(['Doctors.name LIKE' => '%' . $doctorName . '%'])
@@ -199,7 +204,7 @@ class ReportsController extends AppController
         // Get unique patients for this doctor
         $patientsTable = $this->getTableLocator()->get('Patients');
         $patients = $patientsTable->find()
-            ->matching('Appointments', function($q) use ($doctor) {
+            ->matching('Appointments', function ($q) use ($doctor) {
                 return $q->where(['Appointments.doctor_id' => $doctor->id]);
             })
             ->distinct(['Patients.id'])
@@ -220,11 +225,11 @@ class ReportsController extends AppController
     {
         $currentUser = $this->Authentication->getIdentity();
         $month = $this->request->getQuery('month', date('Y-m'));
-        
+
         // Find doctor
         $doctorUsername = $currentUser->username;
         $doctorName = $this->_convertUsernameToName($doctorUsername);
-        
+
         $doctorsTable = $this->getTableLocator()->get('Doctors');
         $doctor = $doctorsTable->find()
             ->contain(['Departments'])
@@ -238,14 +243,15 @@ class ReportsController extends AppController
 
         // Generate detailed monthly statistics
         $reportData = $this->generateMonthlyReport($doctor, $month);
-        
-        $this->set(compact('doctor', 'month', 'reportData'));
+
+        $this->set($reportData);
+        $this->set(compact('doctor', 'month'));
     }
 
     private function generateMonthlyReport($doctor, $month)
     {
         $appointmentsTable = $this->getTableLocator()->get('Appointments');
-        
+
         $monthStart = $month . '-01';
         $monthEnd = date('Y-m-t', strtotime($monthStart));
 
@@ -296,22 +302,70 @@ class ReportsController extends AppController
             ->order(['appointment_date' => 'ASC'])
             ->toArray();
 
+        $appointments = $appointmentsTable->find()
+            ->contain(['Patients', 'Doctors'])
+            ->where([
+                'doctor_id' => $doctor->id,
+                'appointment_date >=' => $monthStart,
+                'appointment_date <=' => $monthEnd
+            ])
+            ->order(['appointment_date' => 'ASC', 'appointment_time' => 'ASC'])
+            ->toArray();
+
         return compact(
-            'totalAppointments', 'completed', 'noShow', 'cancelled', 'dailyStats',
-            'monthStart', 'monthEnd'
+            'totalAppointments',
+            'completed',
+            'noShow',
+            'cancelled',
+            'dailyStats',
+            'monthStart',
+            'monthEnd',
+            'appointments'
         );
     }
 
     private function adminReports()
     {
-        // Admin-specific reports implementation
+        $appointmentsTable = $this->getTableLocator()->get('Appointments');
+        $patientsTable = $this->getTableLocator()->get('Patients');
+        $doctorsTable = $this->getTableLocator()->get('Doctors');
+        $departmentsTable = $this->getTableLocator()->get('Departments');
+
+        $totalPatients = $patientsTable->find()->count();
+        $activeDoctors = $doctorsTable->find()->where(['status' => 'active'])->count();
+        $totalAppointments = $appointmentsTable->find()->count();
+        $totalDepartments = $departmentsTable->find()->count();
+
+        $recentAppointments = $appointmentsTable->find()
+            ->contain(['Patients', 'Doctors'])
+            ->order(['appointment_date' => 'DESC', 'appointment_time' => 'DESC'])
+            ->limit(5)
+            ->toArray();
+
+        $this->set(compact('totalPatients', 'activeDoctors', 'totalAppointments', 'totalDepartments', 'recentAppointments'));
         $this->set('reportType', 'admin');
         $this->render('admin_index');
     }
 
     private function patientReports()
     {
-        // Patient-specific reports implementation  
+        $currentUser = $this->Authentication->getIdentity();
+        $appointmentsTable = $this->getTableLocator()->get('Appointments');
+
+        if (empty($currentUser->patient_id)) {
+            // Try to find patient by email or user_id mapping if patient_id is missing in session
+            // For now, assume empty logic if not connected
+            $appointments = [];
+        } else {
+            $appointments = $appointmentsTable->find()
+                ->contain(['Doctors', 'Doctors.Departments'])
+                ->where(['patient_id' => $currentUser->patient_id])
+                ->order(['appointment_date' => 'DESC'])
+                ->limit(10)
+                ->toArray();
+        }
+
+        $this->set(compact('appointments'));
         $this->set('reportType', 'patient');
         $this->render('patient_index');
     }

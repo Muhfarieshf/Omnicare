@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <?= $this->Html->charset() ?>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,10 +18,13 @@
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
 </head>
+
 <body>
     <?php
-    $isHome = $this->getRequest()->getParam('controller') === 'Pages' && $this->getRequest()->getParam('action') === 'home';
-    if ($isHome) {
+    $identity = $this->getRequest()->getAttribute('identity');
+    $isPublicPage = $this->getRequest()->getParam('controller') === 'Pages' || !$identity;
+
+    if ($isPublicPage) {
         echo $this->element('topbar_home');
     } else {
         echo $this->element('topbar');
@@ -28,46 +32,49 @@
     ?>
 
     <?php
-    $identity = $this->getRequest()->getAttribute('identity');
-    if ($identity && !$isHome) {
+    if ($identity && !$isPublicPage) {
         echo $this->element('sidebar');
     }
     ?>
 
-    <main class="<?= ($identity && !$isHome) ? 'main-content' : 'no-sidebar' ?>">
+    <main class="<?= ($identity && !$isPublicPage) ? 'main-content' : 'no-sidebar' ?>">
         <div class="flash-container">
             <?= $this->Flash->render() ?>
         </div>
-        
+
         <?= $this->fetch('content') ?>
     </main>
 
+    <?php if ($isPublicPage): ?>
+        <?= $this->element('footer') ?>
+    <?php endif; ?>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Mobile Sidebar Toggle
             const toggle = document.getElementById('mobileMenuToggle');
             const sidebar = document.getElementById('sidebarMenu');
             const overlay = document.getElementById('sidebarOverlay');
 
-            if(toggle && sidebar) {
-                toggle.addEventListener('click', function(e) {
+            if (toggle && sidebar) {
+                toggle.addEventListener('click', function (e) {
                     e.preventDefault();
                     sidebar.classList.toggle('show');
-                    if(overlay) overlay.classList.toggle('show');
+                    if (overlay) overlay.classList.toggle('show');
                 });
 
-                if(overlay) {
-                    overlay.addEventListener('click', function() {
+                if (overlay) {
+                    overlay.addEventListener('click', function () {
                         sidebar.classList.remove('show');
                         overlay.classList.remove('show');
                     });
                 }
             }
-            
+
             // Auto-hide Flash Messages
             const flash = document.querySelector('.message');
-            if(flash) {
+            if (flash) {
                 setTimeout(() => {
                     flash.style.opacity = '0';
                     setTimeout(() => flash.remove(), 500);
@@ -76,4 +83,5 @@
         });
     </script>
 </body>
+
 </html>

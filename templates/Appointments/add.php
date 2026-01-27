@@ -20,7 +20,7 @@
 
     <div class="form-card">
         <?= $this->Form->create($appointment) ?>
-        
+
         <h5 class="text-uppercase text-muted small fw-bold mb-4">Appointment Details</h5>
 
         <div class="row g-3">
@@ -64,7 +64,7 @@
                     'min' => date('Y-m-d')
                 ]) ?>
             </div>
-            
+
             <div class="col-md-4 mb-3">
                 <label class="form-label fw-bold">Time</label>
                 <?= $this->Form->control('appointment_time', [
@@ -91,11 +91,12 @@
         </div>
 
         <div id="conflict-message" class="alert alert-danger mt-2" style="display: none;"></div>
-        
-        <div id="available-slots" class="mt-3 p-3 bg-light rounded border" style="display: none;">
-            </div>
 
-        <div id="waiting-list-prompt" class="alert alert-warning mt-3 d-flex justify-content-between align-items-center" style="display: none;">
+        <div id="available-slots" class="mt-3 p-3 bg-light rounded border" style="display: none;">
+        </div>
+
+        <div id="waiting-list-prompt" class="alert alert-warning mt-3 d-flex justify-content-between align-items-center"
+            style="display: none;">
             <div>
                 <strong>No slots available.</strong> All appointments for this date are booked.
             </div>
@@ -105,7 +106,7 @@
         </div>
 
         <div id="alternative-doctors" class="mt-3" style="display: none;">
-            </div>
+        </div>
 
         <div class="mb-3 mt-4">
             <label class="form-label fw-bold">Remarks / Symptoms</label>
@@ -139,21 +140,9 @@
         <div class="border-top pt-3 mt-4 text-end">
             <?= $this->Form->button(__('Book Appointment'), ['class' => 'btn btn-primary']) ?>
         </div>
-        
+
         <?= $this->Form->end() ?>
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    const submitBtn = document.querySelector('.btn-primary');
-    const doctorSelect = document.getElementById('doctor_id');
-    const dateInput = document.getElementById('appointment_date');
-    const timeInput = document.getElementById('appointment_time');
-    const durationInput = document.getElementById('duration_minutes');
-    
-    // UI Elements
-    const conflictMessage = document.getElementById('conflict-message');
-    const availableSlotsDiv = document.getElementById('available-slots');
-    const alternative
+<?php $this->Html->script('appointments', ['block' => true]); ?>
